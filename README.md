@@ -75,6 +75,7 @@ SHA256 от токена) проверяется, повтор того же `in
 | `DASH_BOOTSTRAP_OWNERS` | | логины Forgejo через запятую |
 | `DASH_DONATION_WEBHOOK_TOKEN` | | токен вебхука; пусто — вебхук выключен |
 | `DASH_CRYPTOBOT_TOKEN`, `DASH_CRYPTOBOT_URL` | `https://pay.crypt.bot/api` | токен приложения Crypto Pay; пусто — форма и вебхук выключены |
+| `DASH_CLOUDTIPS_URL` | | ссылка на страницу CloudTips — кнопка «Оплатить через CloudTips»; у CloudTips нет API, оплаты вносятся вручную; пусто — кнопки нет |
 | `DASH_RATES_URL` | `https://www.cbr.ru/scripts/XML_daily.asp` | фид курсов ЦБ; пусто — курс только вручную |
 | `DASH_DEV_LOGIN`, `DASH_SEED_DEMO` | `false` | только локально: вход без пароля и демо-данные |
 

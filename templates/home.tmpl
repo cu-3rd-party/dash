@@ -79,15 +79,18 @@
 	<aside class="min-w-0">
 		<div class="box !mb-0 xl:h-full">
 			<div class="box-header">Поддержать</div>
-			<div class="box-body whitespace-pre-line">{{index .Settings "donate_text"}}</div>
 			{{if .CryptoBot}}
-			<form id="donate-form" class="box-body border-t border-line" method="post" action="{{AppSubURL}}/donate" hx-post="{{AppSubURL}}/donate">
+			<form id="donate-form" class="box-body" method="post" action="{{AppSubURL}}/donate" hx-post="{{AppSubURL}}/donate">
 				<div class="field"><label for="d-amount">Сумма, ₽</label><input id="d-amount" name="amount" inputmode="decimal" required placeholder="500" data-funny="{{.FunnyAmounts}}"></div>
 				<div class="field"><label for="d-donor">Имя</label><input id="d-donor" name="donor" maxlength="100" placeholder="пусто — анонимно"></div>
 				<div class="field"><label for="d-message">Сообщение</label><textarea id="d-message" name="message" rows="2" maxlength="500"></textarea></div>
-				<button class="btn btn-primary w-full" type="submit">Оплатить через Crypto Bot</button>
-				<p class="mt-2 text-xs text-ink-muted">Сумма в рублях, платить можно любой криптовалютой в Telegram.</p>
+				<button class="btn btn-primary inline-flex w-full items-center justify-center gap-2" type="submit"><img src="{{AppSubURL}}/img/cryptobot.svg" alt="" class="h-5 w-5 rounded-full"> Оплатить через Crypto Bot</button>
 			</form>
+			{{end}}
+			{{if .CloudTips}}
+			<div class="box-body{{if .CryptoBot}} border-t border-line{{end}}">
+				<a class="btn btn-primary inline-flex w-full items-center justify-center gap-2" href="{{.CloudTips}}" target="_blank" rel="noopener"><img src="{{AppSubURL}}/img/cloudtips.png" alt="" class="h-5 w-5 rounded"> Оплатить через CloudTips</a>
+			</div>
 			{{end}}
 		</div>
 	</aside>

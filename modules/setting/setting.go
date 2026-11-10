@@ -57,6 +57,9 @@ var (
 	// CryptoBotURL is the Crypto Pay API; the testnet one is https://testnet-pay.crypt.bot/api.
 	CryptoBotURL = "https://pay.crypt.bot/api"
 
+	// CloudTipsURL is the CloudTips page link shown as a donation button (payments there are reconciled by hand); empty hides it.
+	CloudTipsURL = ""
+
 	// RatesURL is the Bank of Russia daily rates feed, loaded once a day; empty disables it.
 	RatesURL = "https://www.cbr.ru/scripts/XML_daily.asp"
 )
@@ -90,6 +93,7 @@ func Load() {
 	DonationWebhookToken = env("DASH_DONATION_WEBHOOK_TOKEN", DonationWebhookToken)
 	CryptoBotToken = env("DASH_CRYPTOBOT_TOKEN", CryptoBotToken)
 	CryptoBotURL = strings.TrimRight(env("DASH_CRYPTOBOT_URL", CryptoBotURL), "/")
+	CloudTipsURL = strings.TrimSpace(env("DASH_CLOUDTIPS_URL", CloudTipsURL))
 	if v, ok := os.LookupEnv("DASH_RATES_URL"); ok {
 		RatesURL = strings.TrimSpace(v)
 	}
