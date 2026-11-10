@@ -35,7 +35,14 @@ func SignIn(ctx *context.Context) {
 		ctx.Redirect(auth_service.SafeNext(next))
 		return
 	}
-	renderSignIn(ctx, http.StatusOK, next, ctx.Req.URL.Query().Get("error"))
+	errMsg := ctx.Req.URL.Query().Get("error")
+	// with Forgejo as the only way in there is nothing to choose: go straight there.
+	// An error from the callback is still shown, otherwise it would loop back to Forgejo.
+	if errMsg == "" && setting.OAuthEnabled() && !setting.DevLogin && !setting.PasswordLoginEnabled() {
+		ctx.Redirect("/auth/login?next=" + url.QueryEscape(auth_service.SafeNext(next)))
+		return
+	}
+	renderSignIn(ctx, http.StatusOK, next, errMsg)
 }
 
 // Login sends the browser to Forgejo: GET /auth/login

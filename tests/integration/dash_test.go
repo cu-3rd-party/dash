@@ -444,3 +444,24 @@ func TestExportImport(t *testing.T) {
 	unittest.AssertCount(t, new(member_model.Member), 3)
 	unittest.AssertExistsAndLoadBean(t, &audit_model.Audit{Action: "data.import"})
 }
+
+func TestSignInGoesStraightToForgejo(t *testing.T) {
+	tests.PrepareTestEnv(t)
+	setting.OAuthClientID, setting.OAuthClientSecret = "client", "secret"
+	t.Cleanup(func() { setting.OAuthClientID, setting.OAuthClientSecret = "", "" })
+
+	resp := MakeRequest(t, NewRequest(t, "GET", "/signin?next=%2Fadmin%2Fexpenses"), http.StatusSeeOther)
+	assert.Equal(t, "/auth/login?next=%2Fadmin%2Fexpenses", resp.Header().Get("Location"))
+	resp = MakeRequest(t, NewRequest(t, "GET", "/auth/login?next=%2Fadmin%2Fexpenses"), http.StatusSeeOther)
+	assert.True(t, strings.HasPrefix(resp.Header().Get("Location"), setting.ForgejoURL+"/login/oauth/authorize?"))
+
+	// an error from the callback is shown instead of looping back to Forgejo
+	resp = MakeRequest(t, NewRequest(t, "GET", "/signin?error=nope"), http.StatusOK)
+	assert.Contains(t, NewHTMLParser(t, resp.Body).Find("#signin-error").Text(), "nope")
+
+	// with another way in the page offers the choice
+	setting.PasswordLogin, setting.Password = "boss", "test-only-password-123"
+	t.Cleanup(func() { setting.PasswordLogin, setting.Password = "", "" })
+	resp = MakeRequest(t, NewRequest(t, "GET", "/signin"), http.StatusOK)
+	NewHTMLParser(t, resp.Body).AssertElement(t, "#password-form", true)
+}
