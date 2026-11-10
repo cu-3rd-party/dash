@@ -45,6 +45,10 @@ func TestCryptoBotDonateCreatesRubleInvoice(t *testing.T) {
 
 	assert.Equal(t, http.StatusUnprocessableEntity, post(map[string]string{"amount": "0"}).Code)
 	assert.Equal(t, http.StatusUnprocessableEntity, post(map[string]string{"amount": "abc"}).Code)
+	for _, funny := range []string{"67", "1488", "69,50"} {
+		assert.Equal(t, http.StatusUnprocessableEntity, post(map[string]string{"amount": funny}).Code, funny)
+	}
+	assert.Nil(t, got, "no invoice for a funny amount")
 	assert.Equal(t, http.StatusUnprocessableEntity, post(map[string]string{"amount": "5", "donor": strings.Repeat("я", 101)}).Code)
 
 	resp := post(map[string]string{"amount": "250,50", "donor": "Маша", "message": "держитесь"})

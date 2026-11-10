@@ -203,3 +203,10 @@ func AdvanceDue(currentDue, paidOn, period string, periods int) string {
 	}
 	return base.AddDate(0, months*periods, 0).Format(DateLayout)
 }
+
+// FunnyAmounts are whole-rouble amounts that are not accepted as donations.
+var FunnyAmounts = []int64{67, 69, 228, 420, 666, 1337, 1488, 6767, 6969, 69420}
+
+// Funny reports whether a donation of amount (minor units) is one of FunnyAmounts.
+// Kopecks do not help: only the whole roubles count.
+func Funny(amount int64) bool { return slices.Contains(FunnyAmounts, amount/100) }

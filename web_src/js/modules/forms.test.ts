@@ -23,3 +23,17 @@ test('a select in a data-autosubmit form submits it', () => {
   form.querySelector('select')!.dispatchEvent(new Event('change', {bubbles: true}));
   expect(submit).toHaveBeenCalledOnce();
 });
+
+test('a funny donation amount makes the field invalid', () => {
+  document.body.innerHTML = `<form><input name="amount" data-funny="67,1488"></form>`;
+  const input = document.querySelector<HTMLInputElement>('input')!;
+  const check = (value: string) => {
+    input.value = value;
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    return input.validity.valid;
+  };
+  expect(check('67')).toBe(false);
+  expect(check('1 488,50')).toBe(false);
+  expect(check('67.99')).toBe(false);
+  expect(check('500')).toBe(true);
+});

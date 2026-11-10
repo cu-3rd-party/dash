@@ -3,11 +3,14 @@ package home
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	donation_model "git.cu3rd.ru/cu3rd/dash/models/donation"
 	expense_model "git.cu3rd.ru/cu3rd/dash/models/expense"
 	sitesetting_model "git.cu3rd.ru/cu3rd/dash/models/sitesetting"
+	"git.cu3rd.ru/cu3rd/dash/modules/money"
 	"git.cu3rd.ru/cu3rd/dash/services/context"
 	cryptobot_service "git.cu3rd.ru/cu3rd/dash/services/cryptobot"
 	finance_service "git.cu3rd.ru/cu3rd/dash/services/finance"
@@ -64,6 +67,11 @@ func Home(ctx *context.Context) {
 	ctx.Data["Donations"] = public
 	ctx.Data["Settings"] = settings
 	ctx.Data["CryptoBot"] = cryptobot_service.Enabled()
+	funny := make([]string, len(money.FunnyAmounts))
+	for i, v := range money.FunnyAmounts {
+		funny[i] = strconv.FormatInt(v, 10)
+	}
+	ctx.Data["FunnyAmounts"] = strings.Join(funny, ",")
 	ctx.Data["PageIsHome"] = true
 	ctx.HTML(http.StatusOK, "home")
 }

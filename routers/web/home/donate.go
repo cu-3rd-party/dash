@@ -32,6 +32,9 @@ func Donate(ctx *context.Context) {
 	case amount <= 0 || amount > maxDonation:
 		ctx.PlainText(http.StatusUnprocessableEntity, "Сумма доната — от 1 ₽ до 1 000 000 ₽.")
 		return
+	case money.Funny(amount):
+		ctx.PlainText(http.StatusUnprocessableEntity, "Такая сумма не принимается, выберите другую.")
+		return
 	case utf8.RuneCountInString(donor) > maxDonor || utf8.RuneCountInString(message) > maxMessage:
 		ctx.PlainText(http.StatusUnprocessableEntity, "Слишком длинное имя или сообщение.")
 		return

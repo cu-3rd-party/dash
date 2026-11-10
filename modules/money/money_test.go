@@ -64,3 +64,15 @@ func TestDaysUntil(t *testing.T) {
 	_, ok = DaysUntil("", now)
 	assert.False(t, ok)
 }
+
+func TestFunny(t *testing.T) {
+	for _, in := range []string{"67", "1488", "1488,99", "69.10"} {
+		v, err := Parse(in)
+		require.NoError(t, err, in)
+		assert.True(t, Funny(v), in)
+	}
+	for _, in := range []string{"500", "100", "1000"} {
+		v, _ := Parse(in)
+		assert.False(t, Funny(v), in)
+	}
+}
