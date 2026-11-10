@@ -2,7 +2,9 @@
 package home
 
 import (
+	"cmp"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -58,7 +60,12 @@ func Home(ctx *context.Context) {
 			visible = append(visible, r)
 		}
 	}
-	ctx.Data["Groups"] = finance_service.GroupRows(visible)
+	groups := finance_service.GroupRows(visible)
+	for _, g := range groups {
+		// the most expensive first inside a category; equal ones keep their order
+		slices.SortStableFunc(g.Rows, func(a, b *finance_service.Row) int { return cmp.Compare(b.Monthly, a.Monthly) })
+	}
+	ctx.Data["Groups"] = groups
 	public := make([]*donation_model.Donation, 0, publicDonationsLimit)
 	for _, d := range donations {
 		if d.IsPublic && len(public) < publicDonationsLimit {

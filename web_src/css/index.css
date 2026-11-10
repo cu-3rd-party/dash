@@ -82,7 +82,7 @@
   }
 
   .table .group-row td {
-    @apply bg-code py-1.5 text-ink-light;
+    @apply bg-code py-1.5 align-middle text-ink-light;
   }
 
   .label {

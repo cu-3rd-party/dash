@@ -49,6 +49,9 @@ type Group struct {
 	Monthly  int64
 }
 
+// Share is the part of the monthly total, in percent.
+func (g Group) Share(of int64) int { return Total{Monthly: g.Monthly}.Share(of) }
+
 // Summary is everything the overview pages show. All money is in rouble kopecks.
 type Summary struct {
 	MonthlyTotal   int64

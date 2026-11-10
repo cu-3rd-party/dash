@@ -12,6 +12,7 @@ import (
 
 	audit_model "git.cu3rd.ru/cu3rd/dash/models/audit"
 	category_model "git.cu3rd.ru/cu3rd/dash/models/category"
+	"git.cu3rd.ru/cu3rd/dash/models/db"
 	donation_model "git.cu3rd.ru/cu3rd/dash/models/donation"
 	expense_model "git.cu3rd.ru/cu3rd/dash/models/expense"
 	member_model "git.cu3rd.ru/cu3rd/dash/models/member"
@@ -55,6 +56,20 @@ func TestHomeIsPublic(t *testing.T) {
 	assert.NotContains(t, feed, "Скрытый")
 	doc.AssertElement(t, `a[href="/admin"]`, false)
 	doc.AssertElement(t, `a[href="/signin"]`, true)
+}
+
+func TestHomeSortsCategoryByMonthlyCost(t *testing.T) {
+	tests.PrepareTestEnv(t)
+	// "zzz" is last by name but the most expensive
+	_, err := db.GetEngine(t.Context()).Insert(&expense_model.Expense{
+		CategoryID: 1, Name: "zzz", Amount: 99999999, Currency: "RUB", Period: "month", IsActive: true, IsPublic: true,
+	})
+	require.NoError(t, err)
+
+	table := NewHTMLParser(t, MakeRequest(t, NewRequest(t, "GET", "/"), http.StatusOK).Body).Find("#public-expenses").Text()
+	zzz, grm := strings.Index(table, "zzz"), strings.Index(table, "grm")
+	require.GreaterOrEqual(t, zzz, 0)
+	assert.Less(t, zzz, grm, "the most expensive item goes first inside its category")
 }
 
 func TestAdminNeedsSignIn(t *testing.T) {
