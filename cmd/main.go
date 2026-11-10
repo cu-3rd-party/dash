@@ -11,6 +11,7 @@ func NewMainApp() *cli.Command {
 		Commands: []*cli.Command{
 			cmdWeb(),
 			cmdMigrate(),
+			cmdExport(),
 		},
 		DefaultCommand: "web",
 	}

@@ -24,7 +24,20 @@
 			</div>
 		</form>
 	</div>
-	<aside class="box min-w-0">
+	<aside class="min-w-0">
+	<div class="box">
+		<div class="box-header">Перенос данных</div>
+		<div class="box-body text-[13px]">
+			<p class="mb-2 text-ink-light">Категории, статьи, оплаты, донаты и настройки в JSON. Пользователи не переносятся.</p>
+			<a id="export-data" class="btn btn-secondary btn-sm mb-3" href="{{AppSubURL}}/admin/settings/export">Скачать экспорт</a>
+			<form id="import-form" method="post" action="{{AppSubURL}}/admin/settings/import" enctype="multipart/form-data" hx-post="{{AppSubURL}}/admin/settings/import" hx-encoding="multipart/form-data" hx-confirm="Загрузить данные из файла? Импорт работает только в пустую базу.">
+				<input class="mb-2" type="file" name="dump" accept="application/json,.json" required aria-label="Файл экспорта">
+				<button class="btn btn-secondary btn-sm" type="submit">Импортировать</button>
+				<p class="help mt-1">Только в пустую базу: без статей, оплат и донатов.</p>
+			</form>
+		</div>
+	</div>
+	<div class="box">
 		<div class="box-header">Окружение</div>
 		{{$env := .Env}}
 		<table class="table text-[13px]">
@@ -38,6 +51,7 @@
 				<tr><td>BOOTSTRAP_OWNERS</td><td class="font-mono">{{range $i, $l := $env.Bootstrap}}{{if $i}}, {{end}}{{$l}}{{else}}—{{end}}</td></tr>
 			</tbody>
 		</table>
+	</div>
 	</aside>
 </div>
 {{template "base/footer" .}}

@@ -73,6 +73,8 @@ linters:
           alias: finance_service
         - pkg: git.cu3rd.ru/cu3rd/dash/services/rates
           alias: rates_service
+        - pkg: git.cu3rd.ru/cu3rd/dash/services/backup
+          alias: backup_service
     nakedret:
       max-func-lines: 0
     revive:

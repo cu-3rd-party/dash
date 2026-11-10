@@ -1,7 +1,9 @@
 package integration
 
 import (
+	"bytes"
 	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -9,6 +11,7 @@ import (
 	"testing"
 
 	audit_model "git.cu3rd.ru/cu3rd/dash/models/audit"
+	category_model "git.cu3rd.ru/cu3rd/dash/models/category"
 	donation_model "git.cu3rd.ru/cu3rd/dash/models/donation"
 	expense_model "git.cu3rd.ru/cu3rd/dash/models/expense"
 	member_model "git.cu3rd.ru/cu3rd/dash/models/member"
@@ -391,4 +394,53 @@ func TestPasswordSignIn(t *testing.T) {
 	assert.Equal(t, http.StatusForbidden, post("boss", "guess", "10.0.0.2").Code)
 	assert.Equal(t, http.StatusTooManyRequests, post("boss", "test-only-password-123", "10.0.0.2").Code)
 	assert.Equal(t, http.StatusSeeOther, post("boss", "test-only-password-123", "10.0.0.3").Code)
+}
+
+func TestExportImport(t *testing.T) {
+	tests.PrepareTestEnv(t)
+	ctx := t.Context()
+
+	MakeRequest(t, as(NewRequest(t, "GET", "/admin/settings/export"), "ed"), http.StatusForbidden)
+	resp := MakeRequest(t, as(NewRequest(t, "GET", "/admin/settings/export"), "boss"), http.StatusOK)
+	assert.Contains(t, resp.Header().Get("Content-Disposition"), "attachment")
+	dump := resp.Body.Bytes()
+
+	upload := func(body []byte) *httptest.ResponseRecorder {
+		var buf bytes.Buffer
+		w := multipart.NewWriter(&buf)
+		fw, err := w.CreateFormFile("dump", "dash.json")
+		require.NoError(t, err)
+		_, _ = fw.Write(body)
+		require.NoError(t, w.Close())
+		req := as(NewRequestWithBody(t, "POST", "/admin/settings/import", &buf), "boss")
+		req.Header.Set("Content-Type", w.FormDataContentType())
+		return MakeRequest(t, req, NoExpectedStatus)
+	}
+	resp = upload(dump)
+	assert.Equal(t, http.StatusUnprocessableEntity, resp.Code)
+	assert.Contains(t, resp.Body.String(), "пустую базу")
+	assert.Equal(t, http.StatusUnprocessableEntity, upload([]byte("<html>")).Code)
+
+	// empty the data, keep the categories: they are matched by slug
+	for id := int64(1); id <= 5; id++ {
+		require.NoError(t, expense_model.Delete(ctx, id))
+	}
+	for id := int64(1); id <= 4; id++ {
+		require.NoError(t, donation_model.Delete(ctx, id))
+	}
+	require.NoError(t, category_model.Delete(ctx, 3))
+
+	resp = upload(dump)
+	require.Equal(t, http.StatusSeeOther, resp.Code, resp.Body.String())
+	unittest.AssertCount(t, new(expense_model.Expense), 5)
+	unittest.AssertCount(t, new(expense_model.Payment), 3)
+	unittest.AssertCount(t, new(donation_model.Donation), 4)
+	unittest.AssertCount(t, new(category_model.Category), 3)
+	grm := unittest.AssertExistsAndLoadBean(t, &expense_model.Expense{Name: "grm"})
+	assert.Equal(t, int64(1), grm.CategoryID, "matched to the existing servers category")
+	assert.Equal(t, "2099-01-15", grm.NextDue)
+	unittest.AssertCount(t, &expense_model.Payment{ExpenseID: grm.ID}, 2)
+	unittest.AssertExistsAndLoadBean(t, &donation_model.Donation{ExternalID: "tx-1", Source: "boosty"})
+	unittest.AssertCount(t, new(member_model.Member), 3)
+	unittest.AssertExistsAndLoadBean(t, &audit_model.Audit{Action: "data.import"})
 }

@@ -5,14 +5,17 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"time"
 
 	audit_model "git.cu3rd.ru/cu3rd/dash/models/audit"
 	category_model "git.cu3rd.ru/cu3rd/dash/models/category"
 	"git.cu3rd.ru/cu3rd/dash/models/db"
 	member_model "git.cu3rd.ru/cu3rd/dash/models/member"
 	sitesetting_model "git.cu3rd.ru/cu3rd/dash/models/sitesetting"
+	"git.cu3rd.ru/cu3rd/dash/modules/money"
 	"git.cu3rd.ru/cu3rd/dash/modules/setting"
 	"git.cu3rd.ru/cu3rd/dash/modules/templates"
+	backup_service "git.cu3rd.ru/cu3rd/dash/services/backup"
 	"git.cu3rd.ru/cu3rd/dash/services/context"
 	rates_service "git.cu3rd.ru/cu3rd/dash/services/rates"
 )
@@ -221,6 +224,38 @@ func UpdateRates(ctx *context.Context) {
 		return
 	}
 	ctx.RedirectWithFlash("/admin/settings", "Курсы ЦБ на "+templates.Date(date)+" загружены")
+}
+
+// ExportData downloads all data as JSON: GET /admin/settings/export
+func ExportData(ctx *context.Context) {
+	d, err := backup_service.Export(ctx.Req.Context())
+	if err != nil {
+		ctx.ServerError("Export", err)
+		return
+	}
+	h := ctx.Resp.Header()
+	h.Set("Content-Type", "application/json; charset=utf-8")
+	h.Set("Content-Disposition", `attachment; filename="dash-`+time.Now().In(money.Moscow).Format("2006-01-02")+`.json"`)
+	if err := backup_service.Write(ctx.Resp, d); err != nil {
+		slog.Error("write export", "err", err)
+	}
+}
+
+// ImportData loads a JSON dump into an empty instance: POST /admin/settings/import
+func ImportData(ctx *context.Context) {
+	f, _, err := ctx.Req.FormFile("dump")
+	if err != nil {
+		ctx.PlainText(http.StatusBadRequest, "Выберите файл экспорта")
+		return
+	}
+	defer func() { _ = f.Close() }()
+	sum, err := backup_service.Import(ctx.Req.Context(), f)
+	if err != nil {
+		ctx.NotFoundOrServerError("Import", err)
+		return
+	}
+	audit_model.Record(ctx.Req.Context(), ctx.DoerLogin(), "data.import", sum.String())
+	ctx.RedirectWithFlash("/admin/settings", "Импортировано — "+sum.String())
 }
 
 // Audit handles GET /admin/audit

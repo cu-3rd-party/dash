@@ -19,7 +19,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-const maxFormBytes = 64 << 10
+// forms are small; the largest body is a JSON dump uploaded on the settings page
+const maxFormBytes = 2 << 20
 
 // Routes returns the router for the web UI.
 func Routes() http.Handler {
@@ -87,6 +88,8 @@ func Routes() http.Handler {
 				r.Method(http.MethodGet, "/settings", context.Handler(admin.Settings))
 				r.Method(http.MethodPost, "/settings", context.Handler(admin.SaveSettings))
 				r.Method(http.MethodPost, "/settings/rates", context.Handler(admin.UpdateRates))
+				r.Method(http.MethodGet, "/settings/export", context.Handler(admin.ExportData))
+				r.Method(http.MethodPost, "/settings/import", context.Handler(admin.ImportData))
 			})
 		})
 	})
