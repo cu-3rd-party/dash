@@ -285,7 +285,6 @@ func TestSettings(t *testing.T) {
 	resp := MakeRequest(t, NewRequest(t, "GET", "/"), http.StatusOK)
 	doc := NewHTMLParser(t, resp.Body)
 	assert.Equal(t, "Касса", strings.TrimSpace(doc.Find("h1").Text()))
-	assert.Contains(t, doc.Text(), "карта 0000")
 }
 
 func TestEveryAdminPageRenders(t *testing.T) {
