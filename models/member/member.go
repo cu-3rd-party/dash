@@ -57,6 +57,7 @@ type Member struct {
 	Login       string `xorm:"VARCHAR(40) NOT NULL UNIQUE"`
 	Name        string `xorm:"VARCHAR(100) NOT NULL DEFAULT ''"`
 	Role        string `xorm:"VARCHAR(16) NOT NULL"`
+	Telegram    string `xorm:"VARCHAR(32) NOT NULL DEFAULT ''"` // empty: same as Login
 	CreatedBy   string `xorm:"VARCHAR(40) NOT NULL DEFAULT ''"`
 	CreatedUnix int64  `xorm:"created"`
 }
@@ -146,4 +147,38 @@ func Upsert(ctx context.Context, m *Member) error {
 func Delete(ctx context.Context, login string) error {
 	_, err := db.GetEngine(ctx).Where("login = ?", login).Delete(new(Member))
 	return err
+}
+
+// TelegramHandle is the contact Telegram login: the chosen one, by default the Forgejo login.
+func (m *Member) TelegramHandle() string {
+	if m.Telegram != "" {
+		return m.Telegram
+	}
+	return m.Login
+}
+
+var telegramRe = regexp.MustCompile(`^[A-Za-z0-9_]{5,32}$`)
+
+// NormalizeTelegram accepts "name", "@name" or a t.me link; empty resets to the default.
+func NormalizeTelegram(s string) (string, error) {
+	s = strings.TrimSpace(s)
+	for _, p := range []string{"https://", "http://", "t.me/", "@"} {
+		s = strings.TrimPrefix(s, p)
+	}
+	if s != "" && !telegramRe.MatchString(s) {
+		return "", ErrInvalidMember{Reason: "некорректный логин Telegram: 5–32 символа, латиница, цифры и _"}
+	}
+	return s, nil
+}
+
+// SetTelegram stores the contact Telegram login of a member (normalized, see NormalizeTelegram).
+func SetTelegram(ctx context.Context, login, telegram string) error {
+	_, err := db.GetEngine(ctx).Where("login = ?", login).Cols("telegram").Update(&Member{Telegram: telegram})
+	return err
+}
+
+// Admins returns members who can edit (editors and owners), by login.
+func Admins(ctx context.Context) ([]*Member, error) {
+	members := make([]*Member, 0, 4)
+	return members, db.GetEngine(ctx).In("role", RoleEditor, RoleOwner).Asc("login").Find(&members)
 }

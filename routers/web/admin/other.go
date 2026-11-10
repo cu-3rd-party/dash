@@ -187,6 +187,29 @@ func DeleteMember(ctx *context.Context) {
 	ctx.RedirectWithFlash("/admin/members", "Доступ отозван: "+m.Login)
 }
 
+// ---- profile ----
+
+// Profile handles GET /admin/profile
+func Profile(ctx *context.Context) {
+	page(ctx, "profile", "Профиль")
+	ctx.HTML(http.StatusOK, "admin/profile")
+}
+
+// SaveProfile stores the contact Telegram of the signed-in admin: POST /admin/profile
+func SaveProfile(ctx *context.Context) {
+	c := ctx.Req.Context()
+	telegram, err := member_model.NormalizeTelegram(ctx.FormString("telegram"))
+	if err != nil {
+		ctx.NotFoundOrServerError("NormalizeTelegram", err)
+		return
+	}
+	if err := member_model.SetTelegram(c, ctx.DoerLogin(), telegram); err != nil {
+		ctx.ServerError("SetTelegram", err)
+		return
+	}
+	ctx.RedirectWithFlash("/admin/profile", "Профиль сохранён")
+}
+
 // ---- settings and audit ----
 
 var settingKeys = []string{

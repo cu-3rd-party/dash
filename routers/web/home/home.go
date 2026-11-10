@@ -7,6 +7,7 @@ import (
 
 	donation_model "git.cu3rd.ru/cu3rd/dash/models/donation"
 	expense_model "git.cu3rd.ru/cu3rd/dash/models/expense"
+	member_model "git.cu3rd.ru/cu3rd/dash/models/member"
 	sitesetting_model "git.cu3rd.ru/cu3rd/dash/models/sitesetting"
 	"git.cu3rd.ru/cu3rd/dash/services/context"
 	finance_service "git.cu3rd.ru/cu3rd/dash/services/finance"
@@ -43,6 +44,17 @@ func Home(ctx *context.Context) {
 		ctx.ServerError("Settings", err)
 		return
 	}
+
+	admins, err := member_model.Admins(c)
+	if err != nil {
+		ctx.ServerError("Admins", err)
+		return
+	}
+	contacts := make([]string, 0, len(admins))
+	for _, a := range admins {
+		contacts = append(contacts, a.TelegramHandle())
+	}
+	ctx.Data["Contacts"] = contacts
 
 	rows := finance_service.Rows(expenses, rates, now)
 	// totals include private expenses and donations: only their details are hidden

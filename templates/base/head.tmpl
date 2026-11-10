@@ -18,7 +18,7 @@
 		{{if .Doer}}
 		<span class="flex items-center gap-2" title="{{RoleLabel .Doer.Role}}">
 			{{if .Avatar}}<img class="avatar" src="{{.Avatar}}" alt="">{{else}}<span class="avatar">{{Initial .Doer.Login}}</span>{{end}}
-			<span class="hidden sm:inline">{{.Doer.Login}}</span>
+			<span class="hidden sm:inline">{{if .Doer.Can "editor"}}<a href="{{AppSubURL}}/admin/profile" title="Профиль">{{.Doer.Login}}</a>{{else}}{{.Doer.Login}}{{end}}</span>
 		</span>
 		<form method="post" action="{{AppSubURL}}/signout"><button class="rounded-box px-2.5 py-1.5 hover:bg-hover" type="submit">Выйти</button></form>
 		{{else}}

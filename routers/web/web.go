@@ -64,6 +64,8 @@ func Routes() http.Handler {
 
 			r.Group(func(r chi.Router) {
 				r.Use(reqRole(member_model.RoleEditor))
+				r.Method(http.MethodGet, "/profile", context.Handler(admin.Profile))
+				r.Method(http.MethodPost, "/profile", context.Handler(admin.SaveProfile))
 				r.Method(http.MethodGet, "/expenses/new", context.Handler(admin.NewExpense))
 				r.Method(http.MethodPost, "/expenses/new", context.Handler(admin.CreateExpense))
 				r.Method(http.MethodGet, "/expenses/{id}/edit", context.Handler(admin.EditExpense))
