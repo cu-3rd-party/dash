@@ -66,8 +66,9 @@ var (
 	CloudTipsRefreshToken = ""
 	// CloudTipsInterval is how often CloudTips is polled for new donations (DASH_CLOUDTIPS_INTERVAL, e.g. 30s, 5m).
 	CloudTipsInterval = 5 * time.Minute
-	// CloudTipsAPIURL and CloudTipsIdentityURL are the endpoints lk.cloudtips.ru talks to.
-	CloudTipsAPIURL      = "https://api.cloudtips.ru/api"
+	// CloudTipsAPIURL is the API lk.cloudtips.ru talks to.
+	CloudTipsAPIURL = "https://api.cloudtips.ru/api"
+	// CloudTipsIdentityURL is its OAuth server (IdentityServer).
 	CloudTipsIdentityURL = "https://identity.cloudtips.ru"
 
 	// RatesURL is the Bank of Russia daily rates feed, loaded once a day; empty disables it.

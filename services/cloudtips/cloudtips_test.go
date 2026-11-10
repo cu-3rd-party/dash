@@ -26,7 +26,7 @@ func TestSync(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/connect/token":
-			require.NoError(t, r.ParseForm())
+			assert.NoError(t, r.ParseForm())
 			refreshes = append(refreshes, r.PostForm.Get("refresh_token"))
 			next := "rotated-" + string(rune('0'+len(refreshes)))
 			_, _ = w.Write([]byte(`{"access_token":"AT","refresh_token":"` + next + `"}`))
