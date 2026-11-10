@@ -6,6 +6,7 @@
 coverage.out
 .env
 .env.dev
+.env.prod
 
 /tests/e2e/reports/
 /tests/e2e/test-artifacts/

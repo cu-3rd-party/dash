@@ -14,6 +14,7 @@ import (
 	member_model "git.cu3rd.ru/cu3rd/dash/models/member"
 	"git.cu3rd.ru/cu3rd/dash/modules/setting"
 	"git.cu3rd.ru/cu3rd/dash/routers"
+	cloudtips_service "git.cu3rd.ru/cu3rd/dash/services/cloudtips"
 	finance_service "git.cu3rd.ru/cu3rd/dash/services/finance"
 	rates_service "git.cu3rd.ru/cu3rd/dash/services/rates"
 
@@ -41,6 +42,22 @@ func updateRatesDaily(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-time.After(wait):
+		}
+	}
+}
+
+// syncCloudTips imports CloudTips donations at start and then every DASH_CLOUDTIPS_INTERVAL.
+func syncCloudTips(ctx context.Context) {
+	for {
+		if n, err := cloudtips_service.Sync(ctx); err != nil {
+			slog.Error("sync cloudtips", "err", err)
+		} else if n > 0 {
+			slog.Info("cloudtips donations imported", "count", n)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(setting.CloudTipsInterval):
 		}
 	}
 }
@@ -88,6 +105,10 @@ func cmdWeb() *cli.Command {
 
 			if setting.RatesURL != "" {
 				go updateRatesDaily(ctx)
+			}
+
+			if cloudtips_service.Enabled() {
+				go syncCloudTips(ctx)
 			}
 
 			slog.Info("listening", "addr", setting.HTTPAddr)

@@ -46,6 +46,16 @@ curl -X POST https://dash.cu3rd.ru/api/donations \
 ```
 
 Ответ `201` — донат создан, `200` — такой `source` + `external_id` уже был (повтор не задвоит сумму).
+### CloudTips
+
+Официального API и вебхука у CloudTips нет, поэтому сервис ходит так же, как сам кабинет: refresh-токен
+(`identity.cloudtips.ru/connect/token`, scope `offline_access`) меняется на access-токен, им читается
+`GET /api/timeline`; записи `operationType=Transaction` становятся донатами (`source=cloudtips`,
+`external_id` — `transactionId`, повтор не задваивает). Токен одноразовый: новый сервис сохраняет в
+настройках сайта (`cloudtips_refresh`), а `DASH_CLOUDTIPS_REFRESH_TOKEN` только затравка — если вставить
+в окружение другой токен, он заменит сохранённый. Протух — войдите в кабинет заново и обновите токен.
+Это неофициальный интерфейс, он может измениться без предупреждения.
+
 ### Crypto Bot (Telegram)
 
 С `DASH_CRYPTOBOT_TOKEN` на главной появляется форма «Оплатить через Crypto Bot»: сумма в рублях, имя
@@ -75,7 +85,10 @@ SHA256 от токена) проверяется, повтор того же `in
 | `DASH_BOOTSTRAP_OWNERS` | | логины Forgejo через запятую |
 | `DASH_DONATION_WEBHOOK_TOKEN` | | токен вебхука; пусто — вебхук выключен |
 | `DASH_CRYPTOBOT_TOKEN`, `DASH_CRYPTOBOT_URL` | `https://pay.crypt.bot/api` | токен приложения Crypto Pay; пусто — форма и вебхук выключены |
-| `DASH_CLOUDTIPS_URL` | | ссылка на страницу CloudTips — кнопка «Оплатить через CloudTips»; у CloudTips нет API, оплаты вносятся вручную; пусто — кнопки нет |
+| `DASH_CLOUDTIPS_URL` | | ссылка на страницу CloudTips — кнопка «Оплатить через CloudTips»; пусто — кнопки нет |
+| `DASH_CLOUDTIPS_REFRESH_TOKEN` | | refresh-токен кабинета lk.cloudtips.ru: донаты из CloudTips подтягиваются сами (см. ниже); пусто — выключено |
+| `DASH_CLOUDTIPS_INTERVAL` | `5m` | как часто опрашивать CloudTips (`30s`, `5m`; не меньше `10s`) |
+| `DASH_CLOUDTIPS_API_URL`, `DASH_CLOUDTIPS_IDENTITY_URL` | `https://api.cloudtips.ru/api`, `https://identity.cloudtips.ru` | адреса, к которым ходит сам кабинет (для тестов) |
 | `DASH_RATES_URL` | `https://www.cbr.ru/scripts/XML_daily.asp` | фид курсов ЦБ; пусто — курс только вручную |
 | `DASH_DEV_LOGIN`, `DASH_SEED_DEMO` | `false` | только локально: вход без пароля и демо-данные |
 

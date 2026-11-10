@@ -3,10 +3,12 @@ package setting
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"os"
 	"slices"
 	"strings"
+	"time"
 )
 
 var (
@@ -59,10 +61,21 @@ var (
 
 	// CloudTipsURL is the CloudTips page link shown as a donation button (payments there are reconciled by hand); empty hides it.
 	CloudTipsURL = ""
+	// CloudTipsRefreshToken is the OAuth refresh token of the CloudTips receiver account (see services/cloudtips);
+	// empty disables the import of donations from it.
+	CloudTipsRefreshToken = ""
+	// CloudTipsInterval is how often CloudTips is polled for new donations (DASH_CLOUDTIPS_INTERVAL, e.g. 30s, 5m).
+	CloudTipsInterval = 5 * time.Minute
+	// CloudTipsAPIURL and CloudTipsIdentityURL are the endpoints lk.cloudtips.ru talks to.
+	CloudTipsAPIURL      = "https://api.cloudtips.ru/api"
+	CloudTipsIdentityURL = "https://identity.cloudtips.ru"
 
 	// RatesURL is the Bank of Russia daily rates feed, loaded once a day; empty disables it.
 	RatesURL = "https://www.cbr.ru/scripts/XML_daily.asp"
 )
+
+// minCloudTipsInterval keeps a typo from hammering CloudTips.
+const minCloudTipsInterval = 10 * time.Second
 
 // Load reads DASH_* environment variables.
 func Load() {
@@ -94,6 +107,15 @@ func Load() {
 	CryptoBotToken = env("DASH_CRYPTOBOT_TOKEN", CryptoBotToken)
 	CryptoBotURL = strings.TrimRight(env("DASH_CRYPTOBOT_URL", CryptoBotURL), "/")
 	CloudTipsURL = strings.TrimSpace(env("DASH_CLOUDTIPS_URL", CloudTipsURL))
+	CloudTipsRefreshToken = strings.TrimSpace(env("DASH_CLOUDTIPS_REFRESH_TOKEN", CloudTipsRefreshToken))
+	if v := env("DASH_CLOUDTIPS_INTERVAL", ""); v != "" {
+		var err error
+		if CloudTipsInterval, err = time.ParseDuration(v); err != nil {
+			CloudTipsInterval = -1 // rejected by Validate
+		}
+	}
+	CloudTipsAPIURL = strings.TrimRight(env("DASH_CLOUDTIPS_API_URL", CloudTipsAPIURL), "/")
+	CloudTipsIdentityURL = strings.TrimRight(env("DASH_CLOUDTIPS_IDENTITY_URL", CloudTipsIdentityURL), "/")
 	if v, ok := os.LookupEnv("DASH_RATES_URL"); ok {
 		RatesURL = strings.TrimSpace(v)
 	}
@@ -115,6 +137,9 @@ func Validate() error {
 	}
 	if Password != "" && len(Password) < 12 {
 		return errors.New("DASH_PASSWORD must be at least 12 characters")
+	}
+	if CloudTipsInterval < minCloudTipsInterval {
+		return fmt.Errorf("DASH_CLOUDTIPS_INTERVAL must be a duration of at least %s", minCloudTipsInterval)
 	}
 	return nil
 }
