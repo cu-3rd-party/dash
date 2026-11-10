@@ -4,7 +4,7 @@
 		<span class="avatar {{if not .Donor}}text-ink-muted{{end}}">{{if .Donor}}{{Initial .Donor}}{{else}}?{{end}}</span>
 		<div class="min-w-0 break-words">
 			<div><strong>{{.DisplayName}}</strong> <span class="text-success-fg">+{{Money .Amount .Currency}}</span>{{if and $.Admin (not .IsPublic)}} <span class="label label-basic">скрыт</span>{{end}}</div>
-			{{if and .Message (not $.Admin)}}<div class="whitespace-pre-line text-[13px]">{{.Message}}</div>{{end}}
+			{{if and .Message (not $.Admin)}}<div class="whitespace-pre-line text-[13px]"><div class="line-clamp-4" data-clamp>{{.Message}}</div><button type="button" class="hidden text-xs text-ink-muted underline" data-clamp-more>Посмотреть целиком</button></div>{{end}}
 			<div class="text-xs text-ink-muted">{{Date .DonatedOn}}{{if $.Admin}} · {{.Source}}{{end}}</div>
 		</div>
 	</li>

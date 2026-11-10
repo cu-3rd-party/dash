@@ -9,6 +9,7 @@ import (
 	expense_model "git.cu3rd.ru/cu3rd/dash/models/expense"
 	sitesetting_model "git.cu3rd.ru/cu3rd/dash/models/sitesetting"
 	"git.cu3rd.ru/cu3rd/dash/services/context"
+	cryptobot_service "git.cu3rd.ru/cu3rd/dash/services/cryptobot"
 	finance_service "git.cu3rd.ru/cu3rd/dash/services/finance"
 )
 
@@ -62,6 +63,7 @@ func Home(ctx *context.Context) {
 	}
 	ctx.Data["Donations"] = public
 	ctx.Data["Settings"] = settings
+	ctx.Data["CryptoBot"] = cryptobot_service.Enabled()
 	ctx.Data["PageIsHome"] = true
 	ctx.HTML(http.StatusOK, "home")
 }

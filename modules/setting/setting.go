@@ -52,6 +52,11 @@ var (
 	// DonationWebhookToken authorizes POST /api/donations; empty disables the endpoint.
 	DonationWebhookToken = ""
 
+	// CryptoBotToken is the Crypto Pay app token (@CryptoBot → Crypto Pay → My Apps); empty disables donations through it.
+	CryptoBotToken = ""
+	// CryptoBotURL is the Crypto Pay API; the testnet one is https://testnet-pay.crypt.bot/api.
+	CryptoBotURL = "https://pay.crypt.bot/api"
+
 	// RatesURL is the Bank of Russia daily rates feed, loaded once a day; empty disables it.
 	RatesURL = "https://www.cbr.ru/scripts/XML_daily.asp"
 )
@@ -83,6 +88,8 @@ func Load() {
 	DevLogin = env("DASH_DEV_LOGIN", "false") == "true"
 	SeedDemo = env("DASH_SEED_DEMO", "false") == "true"
 	DonationWebhookToken = env("DASH_DONATION_WEBHOOK_TOKEN", DonationWebhookToken)
+	CryptoBotToken = env("DASH_CRYPTOBOT_TOKEN", CryptoBotToken)
+	CryptoBotURL = strings.TrimRight(env("DASH_CRYPTOBOT_URL", CryptoBotURL), "/")
 	if v, ok := os.LookupEnv("DASH_RATES_URL"); ok {
 		RatesURL = strings.TrimSpace(v)
 	}

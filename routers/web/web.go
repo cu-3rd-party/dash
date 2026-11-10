@@ -39,12 +39,14 @@ func Routes() http.Handler {
 	// machine endpoints: the webhook authenticates with a bearer token, not a cookie
 	r.Get("/api/summary", api.Summary)
 	r.Post("/api/donations", api.DonationWebhook)
+	r.Post("/api/cryptobot", api.CryptoBotWebhook) // signed by Crypto Pay, not a cookie
 
 	r.Group(func(r chi.Router) {
 		// rejects cross-site POST/PATCH/DELETE using Sec-Fetch-Site / Origin
 		r.Use(http.NewCrossOriginProtection().Handler, limitBody, loadDoer)
 
 		r.Method(http.MethodGet, "/", context.Handler(home.Home))
+		r.Method(http.MethodPost, "/donate", context.Handler(home.Donate))
 		r.Method(http.MethodGet, "/signin", context.Handler(auth.SignIn))
 		r.Method(http.MethodPost, "/signin/dev", context.Handler(auth.DevSignIn))
 		r.Method(http.MethodPost, "/signin/password", context.Handler(auth.PasswordSignIn))

@@ -20,12 +20,12 @@
 		<div class="text-xs uppercase tracking-wide text-ink-muted">Покрыто донатами</div>
 		<div class="stat-value">{{$s.Coverage}}%</div>
 		<div class="bar my-1.5"><div style="width: {{$s.CoveragePercent}}%"></div></div>
-		<div class="text-xs text-ink-muted">годовых расходов</div>
+		<div class="text-xs text-ink-muted">месячных расходов</div>
 	</div>
 </div>
 
-<div class="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
-	<div class="min-w-0">
+<div class="grid items-start gap-5 xl:items-stretch xl:grid-cols-[minmax(0,1fr)_280px_280px]">
+	<div class="min-w-0 [&>.box:last-child]:mb-0">
 		<div class="box">
 			<div class="box-header">На что уходят деньги</div>
 			{{if not .Groups}}<p class="p-6 text-center text-ink-muted">Пока пусто.</p>{{else}}
@@ -77,14 +77,28 @@
 	</div>
 
 	<aside class="min-w-0">
-		<div class="box">
+		<div class="box !mb-0 xl:h-full">
 			<div class="box-header">Поддержать</div>
 			<div class="box-body whitespace-pre-line">{{index .Settings "donate_text"}}</div>
+			{{if .CryptoBot}}
+			<form id="donate-form" class="box-body border-t border-line" method="post" action="{{AppSubURL}}/donate" hx-post="{{AppSubURL}}/donate">
+				<div class="field"><label for="d-amount">Сумма, ₽</label><input id="d-amount" name="amount" inputmode="decimal" required placeholder="500"></div>
+				<div class="field"><label for="d-donor">Имя</label><input id="d-donor" name="donor" maxlength="100" placeholder="пусто — анонимно"></div>
+				<div class="field"><label for="d-message">Сообщение</label><textarea id="d-message" name="message" rows="2" maxlength="500"></textarea></div>
+				<button class="btn btn-primary w-full" type="submit">Оплатить через Crypto Bot</button>
+				<p class="mt-2 text-xs text-ink-muted">Сумма в рублях, платить можно любой криптовалютой в Telegram.</p>
+			</form>
+			{{end}}
 		</div>
-		<div class="box">
+	</aside>
+
+	<aside class="min-w-0 xl:relative xl:self-stretch">
+		<div class="box !mb-0 flex min-h-0 flex-col xl:absolute xl:inset-0">
 			<div class="box-header">Донаты <span class="label">{{len .Donations}}</span></div>
 			{{if not .Donations}}<p class="p-6 text-center text-ink-muted">Пока никто не задонатил — будьте первым.</p>{{end}}
-			{{template "admin/donation_feed" dict "Donations" .Donations "Admin" false}}
+			<div class="min-h-0 max-h-96 overflow-y-auto xl:max-h-none">
+				{{template "admin/donation_feed" dict "Donations" .Donations "Admin" false}}
+			</div>
 		</div>
 	</aside>
 </div>

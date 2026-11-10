@@ -68,7 +68,7 @@ type Summary struct {
 	PaidMonth      int64
 	Paid12m        int64
 	Balance        int64
-	// Coverage is the percent of the yearly expenses covered by donations of the last 12 months.
+	// Coverage is the percent of the monthly expenses covered by donations of the current month.
 	Coverage int
 }
 
@@ -196,8 +196,8 @@ func Summarize(rows []*Row, payments []*expense_model.Payment, donations []*dona
 		}
 	}
 	s.Balance = s.DonationsTotal - s.PaidTotal
-	if s.YearlyTotal > 0 {
-		s.Coverage = int(math.Round(float64(s.Donations12m) * 100 / float64(s.YearlyTotal)))
+	if s.MonthlyTotal > 0 {
+		s.Coverage = int(math.Round(float64(s.DonationsMonth) * 100 / float64(s.MonthlyTotal)))
 	}
 	return s
 }
