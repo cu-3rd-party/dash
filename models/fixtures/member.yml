@@ -1,0 +1,20 @@
+- id: 1
+  login: boss
+  name: Владелец
+  role: owner
+  created_by: bootstrap
+  created_unix: 1767225600
+
+- id: 2
+  login: ed
+  name: Редактор
+  role: editor
+  created_by: boss
+  created_unix: 1767225600
+
+- id: 3
+  login: vi
+  name: ""
+  role: viewer
+  created_by: boss
+  created_unix: 1767225600

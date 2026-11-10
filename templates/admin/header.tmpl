@@ -1,0 +1,22 @@
+<div class="border-b border-line bg-code">
+	<div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 pt-3.5 sm:px-6">
+		<div class="flex items-center gap-1.5 text-lg">
+			<a href="{{AppSubURL}}/admin">cu3rd</a><span class="text-ink-muted">/</span><a href="{{AppSubURL}}/admin" class="font-semibold">dash</a>
+			<span class="label label-basic ml-1">{{RoleLabel .Doer.Role}}</span>
+		</div>
+		{{if .Doer.Can "editor"}}<a class="btn btn-primary btn-sm" href="{{AppSubURL}}/admin/expenses/new">+ Статья расхода</a>{{end}}
+	</div>
+	<div class="mx-auto mt-2 no-scrollbar flex max-w-6xl gap-0.5 overflow-x-auto overflow-y-hidden px-4 sm:px-6">
+		{{$tab := .Tab}}
+		<a class="tab {{if eq $tab "dashboard"}}tab-active{{end}}" href="{{AppSubURL}}/admin">Обзор</a>
+		<a class="tab {{if eq $tab "expenses"}}tab-active{{end}}" href="{{AppSubURL}}/admin/expenses">Расходы</a>
+		<a class="tab {{if eq $tab "payments"}}tab-active{{end}}" href="{{AppSubURL}}/admin/payments">Оплаты</a>
+		<a class="tab {{if eq $tab "donations"}}tab-active{{end}}" href="{{AppSubURL}}/admin/donations">Донаты</a>
+		<a class="tab {{if eq $tab "categories"}}tab-active{{end}}" href="{{AppSubURL}}/admin/categories">Категории</a>
+		<a class="tab {{if eq $tab "audit"}}tab-active{{end}}" href="{{AppSubURL}}/admin/audit">Журнал</a>
+		{{if .Doer.Can "owner"}}
+		<a class="tab {{if eq $tab "members"}}tab-active{{end}}" href="{{AppSubURL}}/admin/members">Пользователи</a>
+		<a class="tab {{if eq $tab "settings"}}tab-active{{end}}" href="{{AppSubURL}}/admin/settings">Настройки</a>
+		{{end}}
+	</div>
+</div>

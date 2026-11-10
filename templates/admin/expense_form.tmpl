@@ -1,0 +1,54 @@
+{{template "base/head" .}}
+{{$e := .Expense}}
+<div class="mx-auto max-w-3xl">
+	<div class="box">
+		<div class="box-header">{{.Title}}</div>
+		<form id="expense-form" class="box-body" method="post" action="{{if $e.ID}}/admin/expenses/{{$e.ID}}/edit{{else}}/admin/expenses/new{{end}}">
+			{{if .Errors}}<ul id="form-errors" class="mb-4 list-inside list-disc rounded-box border border-danger-border bg-danger-bg px-3 py-2 text-danger-text">{{range .Errors}}<li>{{.}}</li>{{end}}</ul>{{end}}
+			<div class="grid gap-x-3 sm:grid-cols-2">
+				<div class="field">
+					<label for="name">Название</label>
+					<input id="name" name="name" value="{{$e.Name}}" placeholder="grm — выделенный сервер / cu3rd.ru" required autofocus>
+				</div>
+				<div class="field">
+					<label for="category_id">Категория</label>
+					<select id="category_id" name="category_id">{{range .Categories}}<option value="{{.ID}}" {{if eq .ID $e.CategoryID}}selected{{end}}>{{.Name}}</option>{{end}}</select>
+					<p class="help"><a href="{{AppSubURL}}/admin/categories">Управление категориями</a></p>
+				</div>
+			</div>
+			<div class="field">
+				<label for="description">Описание серии</label>
+				<textarea id="description" name="description" rows="4" placeholder="Что это, зачем, что на нём работает, как продлевать, где лежит доступ…">{{$e.Description}}</textarea>
+				<p class="help">Описание статьи целиком, а не одного платежа. У каждой оплаты есть свой комментарий.</p>
+			</div>
+			<div class="grid gap-x-3 sm:grid-cols-3">
+				<div class="field"><label for="amount">Стоимость за период</label><input id="amount" name="amount" value="{{.AmountInput}}" inputmode="decimal" placeholder="1500" required></div>
+				<div class="field"><label for="currency">Валюта</label><select id="currency" name="currency">{{range Currencies}}<option {{if eq . $e.Currency}}selected{{end}}>{{.}}</option>{{end}}</select></div>
+				<div class="field"><label for="period">Период</label><select id="period" name="period">{{range Periods}}<option value="{{.Key}}" {{if eq .Key $e.Period}}selected{{end}}>{{.Label}}</option>{{end}}</select></div>
+			</div>
+			<div class="grid gap-x-3 sm:grid-cols-3">
+				<div class="field">
+					<label for="owner">Ответственный</label>
+					<input id="owner" name="owner" value="{{$e.Owner}}" list="members" placeholder="логин Forgejo">
+					<datalist id="members">{{range .Members}}<option value="{{.Login}}">{{.Name}}</option>{{end}}</datalist>
+				</div>
+				<div class="field">
+					<label for="next_due">Следующая оплата</label>
+					<input id="next_due" name="next_due" type="date" value="{{$e.NextDue}}">
+					<p class="help">При записи оплаты сдвигается сама.</p>
+				</div>
+				<div class="field"><label for="provider">Провайдер / регистратор</label><input id="provider" name="provider" value="{{$e.Provider}}" placeholder="Hetzner, REG.RU…"></div>
+			</div>
+			<div class="field"><label for="url">Ссылка на панель или счёт</label><input id="url" name="url" type="url" value="{{$e.URL}}" placeholder="https://"></div>
+			<div class="mb-4 flex flex-col gap-2">
+				<label class="flex flex-wrap items-center gap-2 font-normal"><input type="checkbox" name="is_active" value="on" {{if $e.IsActive}}checked{{end}}> Активна <span class="help">— снятые с учёта статьи уходят в архив и не входят в суммы</span></label>
+				<label class="flex flex-wrap items-center gap-2 font-normal"><input type="checkbox" name="is_public" value="on" {{if $e.IsPublic}}checked{{end}}> Показывать на публичной странице <span class="help">— в общий итог входит в любом случае</span></label>
+			</div>
+			<div class="flex gap-2">
+				<button class="btn btn-primary" type="submit">{{if $e.ID}}Сохранить{{else}}Создать статью{{end}}</button>
+				<a class="btn btn-secondary" href="{{if $e.ID}}/admin/expenses/{{$e.ID}}{{else}}/admin/expenses{{end}}">Отмена</a>
+			</div>
+		</form>
+	</div>
+</div>
+{{template "base/footer" .}}

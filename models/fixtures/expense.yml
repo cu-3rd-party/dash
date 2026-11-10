@@ -1,0 +1,84 @@
+# Dates are RAW SQL literals: testfixtures would otherwise turn "2006-01-02" strings into timestamps.
+# grm: billed monthly in EUR, due far in the future
+- id: 1
+  category_id: 1
+  name: grm
+  description: Основной узел
+  owner: boss
+  provider: Hetzner
+  url: https://robot.hetzner.com
+  amount: 4490
+  currency: EUR
+  period: month
+  next_due: "RAW='2099-01-15'"
+  is_active: true
+  is_public: true
+  created_unix: 1767225600
+  updated_unix: 1767225600
+
+# nxs: overdue
+- id: 2
+  category_id: 1
+  name: nxs
+  description: ""
+  owner: ed
+  provider: ""
+  url: ""
+  amount: 150000
+  currency: RUB
+  period: month
+  next_due: "RAW='2020-01-01'"
+  is_active: true
+  is_public: true
+  created_unix: 1767225600
+  updated_unix: 1767225600
+
+# private: counted in totals, hidden on the public page
+- id: 3
+  category_id: 1
+  name: secret-backup
+  description: ""
+  owner: ed
+  provider: ""
+  url: ""
+  amount: 30000
+  currency: RUB
+  period: month
+  next_due: ""
+  is_active: true
+  is_public: false
+  created_unix: 1767225600
+  updated_unix: 1767225600
+
+- id: 4
+  category_id: 2
+  name: cu3rd.ru
+  description: Основной домен
+  owner: boss
+  provider: REG.RU
+  url: ""
+  amount: 120000
+  currency: RUB
+  period: year
+  next_due: "RAW='2099-06-01'"
+  is_active: true
+  is_public: true
+  created_unix: 1767225600
+  updated_unix: 1767225600
+
+# archived: not in totals, not public
+- id: 5
+  category_id: 2
+  name: old-domain
+  description: ""
+  owner: ""
+  provider: ""
+  url: ""
+  amount: 99900
+  currency: RUB
+  period: year
+  next_due: "RAW='2021-01-01'"
+  is_active: false
+  is_public: true
+  created_unix: 1767225600
+  updated_unix: 1767225600

@@ -1,0 +1,27 @@
+{{template "base/head" .}}
+<div class="mb-3 flex flex-wrap justify-between gap-2 text-ink-muted">
+	<span>Все оплаты по всем статьям</span>
+	<span>{{len .Payments}} {{Plural (len .Payments) "оплата" "оплаты" "оплат"}} · всего ≈ <strong class="text-ink">{{Rub .Total}}</strong></span>
+</div>
+<div class="box">
+	{{if not .Payments}}<p class="p-6 text-center text-ink-muted">Оплат ещё не было. Оплата записывается на странице статьи расхода.</p>{{else}}
+	<div class="overflow-x-auto">
+	<table class="table">
+		<thead><tr><th>Дата</th><th>Статья</th><th class="!text-right">Сумма</th><th>Периодов</th><th>Комментарий</th><th>Кто внёс</th></tr></thead>
+		<tbody>
+		{{range .Payments}}
+		<tr>
+			<td class="whitespace-nowrap">{{Date .PaidOn}}</td>
+			<td><a href="{{AppSubURL}}/admin/expenses/{{.ExpenseID}}">{{.ExpenseName}}</a></td>
+			<td class="whitespace-nowrap text-right">−{{Money .Amount .Currency}}</td>
+			<td>{{.Periods}}</td>
+			<td class="whitespace-pre-line">{{.Note}}</td>
+			<td class="text-ink-muted">{{.CreatedBy}}</td>
+		</tr>
+		{{end}}
+		</tbody>
+	</table>
+	</div>
+	{{end}}
+</div>
+{{template "base/footer" .}}

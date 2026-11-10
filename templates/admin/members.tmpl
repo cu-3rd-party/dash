@@ -1,0 +1,55 @@
+{{template "base/head" .}}
+<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+	<div class="box min-w-0">
+		<div class="overflow-x-auto">
+		<table id="members" class="table">
+			<thead><tr><th>Пользователь Forgejo</th><th>Роль</th><th>Добавлен</th><th></th></tr></thead>
+			<tbody>
+			{{range .Members}}
+			{{$boot := index $.Bootstrap .Login}}
+			<tr id="member-{{.Login}}">
+				<td>
+					<span class="inline-flex items-center gap-1.5"><span class="avatar !h-5 !w-5 !text-[11px]">{{Initial .Login}}</span><a href="{{$.ForgejoURL}}/{{.Login}}" rel="noopener">{{.Login}}</a></span>
+					{{if .Name}}<span class="text-xs text-ink-muted">{{.Name}}</span>{{end}}
+					{{if $boot}}<span class="label label-basic" title="задан в DASH_BOOTSTRAP_OWNERS">bootstrap</span>{{end}}
+					{{if eq .Login $.Doer.Login}}<span class="label">вы</span>{{end}}
+				</td>
+				<td>
+					<form method="post" action="{{AppSubURL}}/admin/members" hx-post="{{AppSubURL}}/admin/members" hx-trigger="change">
+						<input type="hidden" name="login" value="{{.Login}}">
+						{{$role := .Role}}
+						<select class="!w-auto" name="role" aria-label="Роль {{.Login}}" {{if $boot}}disabled{{end}}>{{range Roles}}<option value="{{.Key}}" {{if eq .Key $role}}selected{{end}}>{{.Label}}</option>{{end}}</select>
+						<noscript><button class="btn btn-secondary btn-sm" type="submit">ok</button></noscript>
+					</form>
+				</td>
+				<td class="text-xs text-ink-muted">{{TimeMSK .CreatedUnix}}{{if .CreatedBy}} · {{.CreatedBy}}{{end}}</td>
+				<td class="text-right">
+					{{if and (ne .Login $.Doer.Login) (not $boot)}}
+					<form method="post" action="{{AppSubURL}}/admin/members/{{.Login}}/delete" hx-post="{{AppSubURL}}/admin/members/{{.Login}}/delete" hx-confirm="Отозвать доступ у {{.Login}}?">
+						<button class="link-btn text-xs hover:!text-danger-fg" type="submit">отозвать</button>
+					</form>
+					{{end}}
+				</td>
+			</tr>
+			{{end}}
+			</tbody>
+		</table>
+		</div>
+	</div>
+	<aside class="min-w-0">
+		<div class="box">
+			<div class="box-header">Выдать доступ</div>
+			<form id="member-form" class="box-body" method="post" action="{{AppSubURL}}/admin/members" hx-post="{{AppSubURL}}/admin/members">
+				<div class="field"><label for="m-login">Логин в Forgejo</label><input id="m-login" class="font-mono" name="login" placeholder="username" required></div>
+				<div class="field"><label for="m-name">Имя (необязательно)</label><input id="m-name" name="name"></div>
+				<div class="field"><label for="m-role">Роль</label><select id="m-role" name="role">{{range Roles}}<option value="{{.Key}}" {{if eq .Key "editor"}}selected{{end}}>{{.Label}} — {{.Hint}}</option>{{end}}</select></div>
+				<button class="btn btn-primary w-full" type="submit">Добавить</button>
+			</form>
+		</div>
+		<div class="box box-body text-[13px] text-ink-muted">
+			{{range Roles}}<p class="mb-1.5"><strong class="text-ink">{{.Label}}</strong> — {{.Hint}}.</p>{{end}}
+			<p>Пользователи из <code>DASH_BOOTSTRAP_OWNERS</code> всегда владельцы: так нельзя случайно потерять доступ.</p>
+		</div>
+	</aside>
+</div>
+{{template "base/footer" .}}

@@ -1,0 +1,19 @@
+- id: 1
+  name: site_title
+  value: Финансы cu3rd
+
+- id: 2
+  name: public_intro
+  value: Вступление для тестов
+
+- id: 3
+  name: donate_text
+  value: Реквизиты для тестов
+
+- id: 4
+  name: rate_USD
+  value: "90"
+
+- id: 5
+  name: rate_EUR
+  value: "100"

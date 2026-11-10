@@ -1,0 +1,17 @@
+<div class="field">
+	<label for="donor">Имя</label>
+	<input id="donor" name="donor" value="{{.Donor}}" placeholder="как подписать на сайте" data-anon-target {{if .Anonymous}}disabled{{end}}>
+	<label class="flex items-center gap-2 font-normal"><input type="checkbox" name="anonymous" value="on" data-anon-toggle {{if .Anonymous}}checked{{end}}> Анонимно</label>
+</div>
+<div class="grid gap-x-3 sm:grid-cols-2">
+	<div class="field"><label for="d-amount">Сумма</label><input id="d-amount" name="amount" value="{{.Amount}}" inputmode="decimal" required></div>
+	<div class="field"><label for="d-currency">Валюта</label><select id="d-currency" name="currency">{{$c := .Currency}}{{range Currencies}}<option {{if eq . $c}}selected{{end}}>{{.}}</option>{{end}}</select></div>
+	<div class="field"><label for="donated_on">Дата</label><input id="donated_on" name="donated_on" type="date" value="{{.Date}}" required></div>
+	<div class="field">
+		<label for="source">Источник</label>
+		<input id="source" name="source" value="{{.Source}}" list="sources">
+		<datalist id="sources"><option>manual</option><option>card</option><option>boosty</option><option>cloudtips</option><option>crypto</option></datalist>
+	</div>
+</div>
+<div class="field"><label for="message">Сообщение</label><textarea id="message" name="message" rows="2">{{.Message}}</textarea></div>
+<label class="mb-3.5 flex items-center gap-2 font-normal"><input type="checkbox" name="is_public" value="on" {{if .Public}}checked{{end}}> Показывать на публичной странице</label>

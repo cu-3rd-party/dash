@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+    font-size: 14px;
+  }
+
+  a {
+    @apply hover:underline;
+  }
+
+  input,
+  select,
+  textarea {
+    @apply w-full rounded-box border border-line bg-code px-2.5 py-1.5 text-ink placeholder:text-ink-muted focus:border-ink-muted focus:outline-none disabled:opacity-50;
+  }
+
+  input[type='checkbox'] {
+    @apply h-4 w-4 shrink-0 accent-primary;
+  }
+
+  label {
+    @apply font-medium;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-block whitespace-nowrap rounded-box px-4 py-1.5 text-center hover:no-underline disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary font-medium text-primary-contrast hover:bg-primary-hover;
+  }
+
+  .btn-secondary {
+    @apply border border-line bg-box-header text-ink hover:bg-secondary;
+  }
+
+  .btn-danger {
+    @apply border border-danger-border text-danger-fg hover:bg-danger-bg;
+  }
+
+  .btn-sm {
+    @apply px-2.5 py-1 text-[13px];
+  }
+
+  .link-btn {
+    @apply cursor-pointer text-ink-muted hover:text-ink hover:underline;
+  }
+
+  /* Forgejo segments: header bar + body */
+  .box {
+    @apply mb-4 overflow-hidden rounded-box border border-line bg-box;
+  }
+
+  .box-header {
+    @apply flex flex-wrap items-center gap-2 border-b border-line bg-box-header px-3.5 py-2.5 font-semibold;
+  }
+
+  .box-body {
+    @apply p-3.5;
+  }
+
+  .table {
+    @apply w-full border-collapse;
+  }
+
+  .table th {
+    @apply whitespace-nowrap border-b border-line bg-box-header px-3 py-2 text-left text-[13px] font-medium text-ink-light;
+  }
+
+  .table td {
+    @apply border-t border-line px-3 py-2 align-top;
+  }
+
+  .table tr:first-child td {
+    @apply border-t-0;
+  }
+
+  .table .group-row td {
+    @apply bg-code py-1.5 text-ink-light;
+  }
+
+  .label {
+    @apply inline-flex items-center whitespace-nowrap rounded-box border border-transparent bg-secondary px-1.5 py-px align-middle text-xs font-medium leading-5;
+  }
+
+  .label-basic {
+    @apply border-line bg-transparent text-ink-light;
+  }
+
+  .status-ok {
+    @apply bg-success-bg text-success-fg;
+  }
+
+  .status-soon {
+    @apply bg-warning-bg text-warning-text;
+  }
+
+  .status-overdue {
+    @apply bg-danger-bg text-danger-fg;
+  }
+
+  .status-nodate {
+    @apply text-ink-muted;
+  }
+
+  .status-inactive {
+    @apply border-line bg-transparent text-ink-muted;
+  }
+
+  .avatar {
+    @apply inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-box bg-secondary text-xs font-semibold;
+  }
+
+  .field {
+    @apply mb-3.5 flex min-w-0 flex-col gap-1;
+  }
+
+  .help {
+    @apply text-xs font-normal text-ink-muted;
+  }
+
+  .tab {
+    @apply whitespace-nowrap border-b-2 border-transparent px-3.5 pb-2.5 pt-2 text-ink-light hover:bg-hover hover:text-ink hover:no-underline;
+  }
+
+  .tab-active {
+    @apply border-primary font-medium text-ink;
+  }
+
+  .stat-value {
+    @apply my-1 whitespace-nowrap text-2xl font-semibold tabular-nums;
+  }
+
+  .bar {
+    @apply h-1.5 overflow-hidden rounded-full bg-secondary;
+  }
+
+  .bar > div {
+    @apply h-full rounded-full bg-primary;
+  }
+}
+
+/* htmx adds .is-loading (htmx.config.requestClass) to the element issuing a request */
+.is-loading {
+  @apply pointer-events-none opacity-60;
+}
+
+/* tabs scroll sideways on narrow screens without showing a scrollbar */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

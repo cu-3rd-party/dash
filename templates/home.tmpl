@@ -1,0 +1,85 @@
+{{template "base/head" .}}
+{{$s := .Summary}}
+<header class="mb-5">
+	<h1 class="mb-1 text-2xl font-medium">{{or (index .Settings "site_title") "Финансы cu3rd"}}</h1>
+	{{with index .Settings "public_intro"}}<p class="max-w-3xl whitespace-pre-line text-ink-light">{{.}}</p>{{end}}
+</header>
+
+<div class="mb-5 grid gap-4 sm:grid-cols-3">
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Расходы в месяц</div>
+		<div id="monthly-total" class="stat-value">{{Rub $s.MonthlyTotal}}</div>
+		<div class="text-xs text-ink-muted">{{Rub $s.YearlyTotal}} в год · {{$s.ActiveCount}} {{Plural $s.ActiveCount "статья" "статьи" "статей"}}</div>
+	</div>
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Донаты за 12 месяцев</div>
+		<div class="stat-value">{{Rub $s.Donations12m}}</div>
+		<div class="text-xs text-ink-muted">всего {{Rub $s.DonationsTotal}} · спасибо {{$s.DonorsCount}} {{Plural $s.DonorsCount "человеку" "людям" "людям"}}</div>
+	</div>
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Покрыто донатами</div>
+		<div class="stat-value">{{$s.Coverage}}%</div>
+		<div class="bar my-1.5"><div style="width: {{$s.CoveragePercent}}%"></div></div>
+		<div class="text-xs text-ink-muted">годовых расходов</div>
+	</div>
+</div>
+
+<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+	<div class="min-w-0">
+		<div class="box">
+			<div class="box-header">На что уходят деньги</div>
+			{{if not .Groups}}<p class="p-6 text-center text-ink-muted">Пока пусто.</p>{{else}}
+			<div class="overflow-x-auto">
+			<table id="public-expenses" class="table">
+				<thead><tr><th>Статья</th><th class="!text-right">Стоимость</th><th class="!text-right">В месяц</th><th>Следующая оплата</th></tr></thead>
+				{{range .Groups}}
+				<tbody>
+					<tr class="group-row"><td colspan="3"><strong>{{.Category}}</strong></td><td class="text-right">{{Rub .Monthly}}/мес</td></tr>
+					{{range .Rows}}
+					<tr>
+						<td>
+							<div>{{.Name}}{{if .Provider}} <span class="text-xs text-ink-muted">· {{.Provider}}</span>{{end}}</div>
+							{{if .Description}}<div class="whitespace-pre-line text-xs text-ink-muted">{{.Description}}</div>{{end}}
+						</td>
+						<td class="whitespace-nowrap text-right">{{Money .Amount .Currency}}<span class="text-ink-muted">/{{.PeriodInfo.Short}}</span></td>
+						<td class="whitespace-nowrap text-right">{{Rub .Monthly}}</td>
+						<td class="whitespace-nowrap">{{template "admin/due" .}}</td>
+					</tr>
+					{{end}}
+				</tbody>
+				{{end}}
+				<tfoot><tr class="bg-box-header font-semibold"><td class="px-3 py-2">Итого{{if $s.HiddenCount}} <span class="text-xs font-normal text-ink-muted">(вкл. {{$s.HiddenCount}} непубличных)</span>{{end}}</td><td></td><td class="whitespace-nowrap px-3 py-2 text-right">{{Rub $s.MonthlyTotal}}</td><td></td></tr></tfoot>
+			</table>
+			</div>
+			{{end}}
+		</div>
+
+		{{if $s.ByCategory}}
+		<div class="box">
+			<div class="box-header">По категориям</div>
+			<div class="box-body">
+				{{range $s.ByCategory}}
+				<div class="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 py-1.5 sm:grid-cols-[160px_1fr_auto]">
+					<div>{{.Name}} <span class="text-xs text-ink-muted">· {{.Count}}</span></div>
+					<div class="bar col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto"><div style="width: {{.Share $s.MonthlyTotal}}%"></div></div>
+					<div class="whitespace-nowrap text-right">{{Rub .Monthly}}/мес</div>
+				</div>
+				{{end}}
+			</div>
+		</div>
+		{{end}}
+	</div>
+
+	<aside class="min-w-0">
+		<div class="box">
+			<div class="box-header">Поддержать</div>
+			<div class="box-body whitespace-pre-line">{{index .Settings "donate_text"}}</div>
+		</div>
+		<div class="box">
+			<div class="box-header">Донаты <span class="label">{{len .Donations}}</span></div>
+			{{if not .Donations}}<p class="p-6 text-center text-ink-muted">Пока никто не задонатил — будьте первым.</p>{{end}}
+			{{template "admin/donation_feed" dict "Donations" .Donations "Admin" false}}
+		</div>
+	</aside>
+</div>
+{{template "base/footer" .}}

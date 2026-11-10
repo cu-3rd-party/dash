@@ -1,0 +1,56 @@
+{{template "base/head" .}}
+<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+	<form method="get" action="{{AppSubURL}}/admin/expenses" class="flex flex-wrap gap-2" data-autosubmit>
+		<select name="cat" class="!w-auto" aria-label="Категория">
+			<option value="">Все категории</option>
+			{{range .Categories}}<option value="{{.ID}}" {{if eq .ID $.Cat}}selected{{end}}>{{.Name}} ({{.ExpenseCount}})</option>{{end}}
+		</select>
+		<select name="status" class="!w-auto" aria-label="Статус">
+			{{range (list "" "attention" "overdue" "inactive" "all")}}
+			<option value="{{.}}" {{if eq . $.Status}}selected{{end}}>{{if eq . ""}}Активные{{else if eq . "attention"}}Требуют внимания{{else if eq . "overdue"}}Просроченные{{else if eq . "inactive"}}Архив{{else}}Все{{end}}</option>
+			{{end}}
+		</select>
+		<select name="owner" class="!w-auto" aria-label="Ответственный">
+			<option value="">Все ответственные</option>
+			{{range .Owners}}<option {{if eq . $.Owner}}selected{{end}}>{{.}}</option>{{end}}
+		</select>
+		<noscript><button class="btn btn-secondary" type="submit">Применить</button></noscript>
+	</form>
+	<div class="text-ink-muted">{{.Count}} {{Plural .Count "статья" "статьи" "статей"}} · <strong class="text-ink">{{Rub .Monthly}}</strong>/мес</div>
+</div>
+
+<div class="box">
+	{{if not .Groups}}
+	<p class="p-6 text-center text-ink-muted">Ничего не найдено.{{if .Doer.Can "editor"}} <a class="underline" href="{{AppSubURL}}/admin/expenses/new">Добавить статью расхода</a>{{end}}</p>
+	{{else}}
+	<div class="overflow-x-auto">
+	<table id="expenses" class="table">
+		<thead><tr><th>Статья</th><th>Ответственный</th><th class="!text-right">Стоимость</th><th class="!text-right">≈ в месяц</th><th>Последняя оплата</th><th>Следующая оплата</th><th></th></tr></thead>
+		{{range .Groups}}
+		<tbody>
+			<tr class="group-row"><td colspan="6"><strong>{{.Category}}</strong> <span class="text-xs">· {{len .Rows}}</span></td><td class="whitespace-nowrap text-right">{{Rub .Monthly}}/мес</td></tr>
+			{{range .Rows}}
+			<tr id="expense-{{.ID}}" class="hover:bg-hover {{if not .IsActive}}opacity-55{{end}}">
+				<td>
+					<a class="font-semibold" href="{{AppSubURL}}/admin/expenses/{{.ID}}">{{.Name}}</a>
+					{{if not .IsPublic}}<span class="label label-basic" title="не показывается на публичной странице">скрыта</span>{{end}}
+					{{if .Provider}}<div class="text-xs text-ink-muted">{{.Provider}}</div>{{end}}
+				</td>
+				<td>{{if .Owner}}<a class="inline-flex items-center gap-1.5" href="{{AppSubURL}}/admin/expenses?owner={{.Owner}}"><span class="avatar !h-5 !w-5 !text-[11px]">{{Initial .Owner}}</span>{{.Owner}}</a>{{else}}<span class="text-ink-muted">—</span>{{end}}</td>
+				<td class="whitespace-nowrap text-right">{{Money .Amount .Currency}}<span class="text-ink-muted">/{{.PeriodInfo.Short}}</span></td>
+				<td class="whitespace-nowrap text-right">{{if .Monthly}}{{Rub .Monthly}}{{else}}<span class="text-ink-muted">—</span>{{end}}</td>
+				<td class="whitespace-nowrap">{{with .LastPayment}}{{Date .PaidOn}} <span class="text-xs text-ink-muted">{{Money .Amount .Currency}}</span>{{else}}<span class="text-ink-muted">—</span>{{end}}</td>
+				<td class="whitespace-nowrap">{{template "admin/due" .}}</td>
+				<td class="whitespace-nowrap text-right">
+					{{template "admin/status_label" .}}
+					{{if $.Doer.Can "editor"}}<a class="mt-1 block text-xs text-ink-muted hover:text-ink" href="{{AppSubURL}}/admin/expenses/{{.ID}}/edit">изменить</a>{{end}}
+				</td>
+			</tr>
+			{{end}}
+		</tbody>
+		{{end}}
+	</table>
+	</div>
+	{{end}}
+</div>
+{{template "base/footer" .}}

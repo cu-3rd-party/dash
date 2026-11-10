@@ -1,0 +1,30 @@
+# Dates are RAW SQL literals: testfixtures would otherwise turn "2006-01-02" strings into timestamps.
+- id: 1
+  expense_id: 1
+  paid_on: "RAW='2026-09-15'"
+  amount: 4490
+  currency: EUR
+  periods: 1
+  note: ""
+  created_by: boss
+  created_unix: 1767225600
+
+- id: 2
+  expense_id: 1
+  paid_on: "RAW='2026-10-15'"
+  amount: 4490
+  currency: EUR
+  periods: 1
+  note: счёт R-42
+  created_by: boss
+  created_unix: 1767225600
+
+- id: 3
+  expense_id: 4
+  paid_on: "RAW='2026-06-01'"
+  amount: 120000
+  currency: RUB
+  periods: 1
+  note: ""
+  created_by: ed
+  created_unix: 1767225600

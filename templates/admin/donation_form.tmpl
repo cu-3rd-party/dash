@@ -1,0 +1,21 @@
+{{template "base/head" .}}
+{{$d := .Donation}}
+<div class="mx-auto max-w-lg">
+	<div class="box">
+		<div class="box-header">Донат #{{$d.ID}} <span class="text-xs font-normal text-ink-muted">· {{$d.Source}}{{if $d.ExternalID}} · {{$d.ExternalID}}{{end}}</span></div>
+		<div class="box-body">
+			<form method="post" action="{{AppSubURL}}/admin/donations/{{$d.ID}}/edit" hx-post="{{AppSubURL}}/admin/donations/{{$d.ID}}/edit">
+				{{template "admin/donation_fields" dict "Donor" $d.Donor "Anonymous" (not $d.Donor) "Amount" (MoneyInput $d.Amount) "Currency" $d.Currency "Date" $d.DonatedOn "Source" $d.Source "Message" $d.Message "Public" $d.IsPublic}}
+				<div class="flex gap-2">
+					<button class="btn btn-primary" type="submit">Сохранить</button>
+					<a class="btn btn-secondary" href="{{AppSubURL}}/admin/donations">Отмена</a>
+				</div>
+			</form>
+			<form class="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4" method="post" action="{{AppSubURL}}/admin/donations/{{$d.ID}}/delete" hx-post="{{AppSubURL}}/admin/donations/{{$d.ID}}/delete" hx-confirm="Удалить донат безвозвратно?">
+				<button class="btn btn-danger btn-sm" type="submit">Удалить донат</button>
+				<span class="text-xs text-ink-muted">добавлен {{TimeMSK $d.CreatedUnix}}{{if $d.CreatedBy}}, {{$d.CreatedBy}}{{end}}</span>
+			</form>
+		</div>
+	</div>
+</div>
+{{template "base/footer" .}}

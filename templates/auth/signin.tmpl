@@ -1,0 +1,37 @@
+{{template "base/head" .}}
+<div class="mx-auto max-w-md">
+	<div class="box">
+		<div class="box-header justify-center">Вход в админку финансов</div>
+		<div class="box-body">
+			{{with .Error}}<p id="signin-error" class="mb-3 rounded-box border border-danger-border bg-danger-bg px-3 py-2 text-danger-text">{{.}}</p>{{end}}
+			{{if .OAuth}}
+			<p class="mb-3 text-ink-light">Вход через аккаунт <a class="underline" href="{{.ForgejoURL}}">{{.ForgejoURL}}</a>. Доступ есть только у пользователей из списка — его ведут владельцы.</p>
+			<a class="btn btn-primary w-full" href="{{AppSubURL}}/auth/login?next={{.Next}}">Войти через Forgejo</a>
+			{{else if not .PasswordLogin}}
+			<p class="text-ink-light">Вход через Forgejo не настроен.</p>
+			{{end}}
+			{{if .PasswordLogin}}
+			<form id="password-form" class="{{if .OAuth}}mt-4 border-t border-line pt-4{{end}}" method="post" action="{{AppSubURL}}/signin/password">
+				<input type="hidden" name="next" value="{{.Next}}">
+				<div class="field"><label for="pw-login">Логин</label><input id="pw-login" name="login" autocomplete="username" required {{if not .OAuth}}autofocus{{end}}></div>
+				<div class="field"><label for="pw-password">Пароль</label><input id="pw-password" name="password" type="password" autocomplete="current-password" required></div>
+				<button class="btn {{if .OAuth}}btn-secondary{{else}}btn-primary{{end}} w-full" type="submit">Войти</button>
+			</form>
+			{{end}}
+			{{if .DevLogin}}
+			<div class="my-4 border-t border-line pt-4">
+				<form method="post" action="{{AppSubURL}}/signin/dev">
+					<input type="hidden" name="next" value="{{.Next}}">
+					<div class="field">
+						<label for="dev-login">Логин из списка доступа <span class="label status-soon">dev</span></label>
+						<input id="dev-login" name="login" placeholder="admin" required autofocus>
+						<p class="help">DASH_DEV_LOGIN — вход без пароля, только локально. Демо: <code>admin</code> (владелец), <code>editor</code>, <code>viewer</code>.</p>
+					</div>
+					<button class="btn btn-secondary w-full" type="submit">Войти (dev)</button>
+				</form>
+			</div>
+			{{end}}
+		</div>
+	</div>
+</div>
+{{template "base/footer" .}}

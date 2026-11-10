@@ -1,0 +1,17 @@
+{{template "base/head" .}}
+<div class="box">
+	{{if not .Entries}}<p class="p-6 text-center text-ink-muted">Журнал пуст.</p>{{else}}
+	<ul id="audit">
+		{{range .Entries}}
+		<li class="flex gap-2.5 border-t border-line px-3.5 py-2.5 first:border-t-0">
+			<span class="avatar !h-5 !w-5 !text-[11px]">{{Initial .Actor}}</span>
+			<div class="min-w-0 break-words">
+				<strong>{{.Actor}}</strong> <span class="label label-basic font-mono">{{.Action}}</span> {{.Details}}
+				<div class="text-xs text-ink-muted">{{TimeMSK .CreatedUnix}} МСК</div>
+			</div>
+		</li>
+		{{end}}
+	</ul>
+	{{end}}
+</div>
+{{template "base/footer" .}}

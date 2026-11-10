@@ -1,0 +1,1 @@
+{{if .NextDue}}<span class="{{if eq .Status "overdue"}}font-semibold text-danger-fg{{else if eq .Status "soon"}}font-semibold text-warning-text{{end}}">{{Date .NextDue}}</span> <span class="text-xs text-ink-muted">{{Relative .NextDue}}</span>{{else}}<span class="text-ink-muted">—</span>{{end}}

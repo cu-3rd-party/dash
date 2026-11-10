@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#050505">
+	<title>{{if .Title}}{{.Title}} - {{end}}dash.cu3rd</title>
+	{{FaviconLink}}
+	<link rel="stylesheet" href="{{AssetURL "css/index.css"}}">
+	<script defer src="{{AssetURL "js/index.js"}}"></script>
+</head>
+<body class="flex min-h-screen flex-col bg-page text-ink" hx-headers='{"X-Requested-With": "htmx"}'>
+<nav class="flex h-[49px] shrink-0 items-center gap-1 border-b border-line bg-page px-3 sm:px-4">
+	<a href="{{AppSubURL}}/" class="mr-1 hover:no-underline" aria-label="Финансы cu3rd, на главную">{{InlineLogo}}</a>
+	<a href="{{AppSubURL}}/" class="rounded-box px-2.5 py-1.5 hover:bg-hover hover:no-underline {{if .PageIsHome}}bg-secondary{{end}}">Обзор</a>
+	{{if .Doer}}<a href="{{AppSubURL}}/admin" class="rounded-box px-2.5 py-1.5 hover:bg-hover hover:no-underline {{if .PageIsAdmin}}bg-secondary{{end}}">Админка</a>{{end}}
+	<div class="ml-auto flex items-center gap-2">
+		{{if .Doer}}
+		<span class="flex items-center gap-2" title="{{RoleLabel .Doer.Role}}">
+			{{if .Avatar}}<img class="avatar" src="{{.Avatar}}" alt="">{{else}}<span class="avatar">{{Initial .Doer.Login}}</span>{{end}}
+			<span class="hidden sm:inline">{{.Doer.Login}}</span>
+		</span>
+		<form method="post" action="{{AppSubURL}}/signout"><button class="rounded-box px-2.5 py-1.5 hover:bg-hover" type="submit">Выйти</button></form>
+		{{else}}
+		<a href="{{AppSubURL}}/signin" class="rounded-box px-2.5 py-1.5 hover:bg-hover hover:no-underline">Войти</a>
+		{{end}}
+	</div>
+</nav>
+{{if .PageIsAdmin}}{{template "admin/header" .}}{{end}}
+<main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
+{{with .Flash}}<div id="flash" class="mb-4 rounded-box border border-success-border bg-success-bg px-3.5 py-2.5 text-success-text" role="status">{{.}}</div>{{end}}

@@ -1,0 +1,51 @@
+# Dates are RAW SQL literals: testfixtures would otherwise turn "2006-01-02" strings into timestamps.
+- id: 1
+  donor: Вася
+  amount: 50000
+  currency: RUB
+  donated_on: "RAW='2026-10-01'"
+  source: manual
+  external_id: ""
+  message: Спасибо за сервисы
+  is_public: true
+  created_by: boss
+  created_unix: 1767225600
+
+# anonymous
+- id: 2
+  donor: ""
+  amount: 100000
+  currency: RUB
+  donated_on: "RAW='2026-09-01'"
+  source: manual
+  external_id: ""
+  message: ""
+  is_public: true
+  created_by: boss
+  created_unix: 1767225600
+
+# private: counted, not listed publicly
+- id: 3
+  donor: Скрытый
+  amount: 30000
+  currency: RUB
+  donated_on: "RAW='2026-08-01'"
+  source: manual
+  external_id: ""
+  message: ""
+  is_public: false
+  created_by: boss
+  created_unix: 1767225600
+
+# came through the webhook
+- id: 4
+  donor: kot
+  amount: 1000
+  currency: USD
+  donated_on: "RAW='2026-07-01'"
+  source: boosty
+  external_id: tx-1
+  message: на домены
+  is_public: true
+  created_by: webhook
+  created_unix: 1767225600

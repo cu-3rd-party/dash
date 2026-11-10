@@ -1,0 +1,43 @@
+{{template "base/head" .}}
+<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+	<div class="box min-w-0">
+		<div class="box-header">Публичная страница и курсы</div>
+		<form id="settings-form" class="box-body" method="post" action="{{AppSubURL}}/admin/settings" hx-post="{{AppSubURL}}/admin/settings">
+			<div class="field"><label for="site_title">Заголовок</label><input id="site_title" name="site_title" value="{{index .Values "site_title"}}"></div>
+			<div class="field"><label for="public_intro">Вступление</label><textarea id="public_intro" name="public_intro" rows="3">{{index .Values "public_intro"}}</textarea></div>
+			<div class="field">
+				<label for="donate_text">Блок «Поддержать»</label>
+				<textarea id="donate_text" name="donate_text" rows="4">{{index .Values "donate_text"}}</textarea>
+				<p class="help">Реквизиты, ссылка на страницу доната и т.п. Простой текст, переносы строк сохраняются.</p>
+			</div>
+			<h2 class="mb-1 mt-5 font-semibold">Курсы валют, ₽ за 1 единицу</h2>
+			<p class="help mb-2">По ним статьи и донаты пересчитываются в рубли во всех итогах.
+				{{if .RatesURL}}Раз в сутки курс загружается из ЦБ РФ и заменяет введённый вручную.{{else}}Автозагрузка выключена (DASH_RATES_URL пуст), курс задаётся вручную.{{end}}</p>
+			<p id="rates-status" class="mb-2 text-[13px] text-ink-light">{{if .RatesDate}}Курс ЦБ на {{Date .RatesDate}}, загружен {{TimeMSK .RatesFetched}} МСК{{else}}Курс ещё не загружался — сейчас действуют значения, введённые вручную{{end}}</p>
+			<div class="grid grid-cols-2 gap-x-3">
+				<div class="field"><label for="rate_USD">USD</label><input id="rate_USD" name="rate_USD" value="{{index .Values "rate_USD"}}" inputmode="decimal" required></div>
+				<div class="field"><label for="rate_EUR">EUR</label><input id="rate_EUR" name="rate_EUR" value="{{index .Values "rate_EUR"}}" inputmode="decimal" required></div>
+			</div>
+			<div class="flex flex-wrap gap-2">
+				<button class="btn btn-primary" type="submit">Сохранить</button>
+				{{if .RatesURL}}<button id="update-rates" class="btn btn-secondary" type="submit" formaction="{{AppSubURL}}/admin/settings/rates" formnovalidate hx-post="{{AppSubURL}}/admin/settings/rates">Обновить курс из ЦБ</button>{{end}}
+			</div>
+		</form>
+	</div>
+	<aside class="box min-w-0">
+		<div class="box-header">Окружение</div>
+		{{$env := .Env}}
+		<table class="table text-[13px]">
+			<tbody>
+				<tr><td>База данных</td><td class="font-mono">{{$env.DB}}</td></tr>
+				<tr><td>BASE_URL</td><td class="break-all font-mono">{{$env.BaseURL}}</td></tr>
+				<tr><td>Forgejo</td><td class="break-all font-mono">{{$env.ForgejoURL}}</td></tr>
+				<tr><td>OAuth</td><td>{{if $env.OAuth}}<span class="label status-ok">настроен</span>{{else}}<span class="label status-overdue">не настроен</span>{{end}}</td></tr>
+				<tr><td>DEV_LOGIN</td><td>{{if $env.DevLogin}}<span class="label status-soon">включён</span>{{else}}выключен{{end}}</td></tr>
+				<tr><td>Вебхук донатов</td><td>{{if $env.Webhook}}<span class="label status-ok">включён</span>{{else}}выключен{{end}}</td></tr>
+				<tr><td>BOOTSTRAP_OWNERS</td><td class="font-mono">{{range $i, $l := $env.Bootstrap}}{{if $i}}, {{end}}{{$l}}{{else}}—{{end}}</td></tr>
+			</tbody>
+		</table>
+	</aside>
+</div>
+{{template "base/footer" .}}

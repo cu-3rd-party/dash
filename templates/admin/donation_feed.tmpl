@@ -1,0 +1,12 @@
+<ul class="donation-feed">
+	{{range .Donations}}
+	<li class="flex gap-2.5 border-t border-line px-3.5 py-2.5 first:border-t-0">
+		<span class="avatar {{if not .Donor}}text-ink-muted{{end}}">{{if .Donor}}{{Initial .Donor}}{{else}}?{{end}}</span>
+		<div class="min-w-0 break-words">
+			<div><strong>{{.DisplayName}}</strong> <span class="text-success-fg">+{{Money .Amount .Currency}}</span>{{if and $.Admin (not .IsPublic)}} <span class="label label-basic">скрыт</span>{{end}}</div>
+			{{if and .Message (not $.Admin)}}<div class="whitespace-pre-line text-[13px]">{{.Message}}</div>{{end}}
+			<div class="text-xs text-ink-muted">{{Date .DonatedOn}}{{if $.Admin}} · {{.Source}}{{end}}</div>
+		</div>
+	</li>
+	{{end}}
+</ul>

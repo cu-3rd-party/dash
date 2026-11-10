@@ -1,0 +1,103 @@
+{{template "base/head" .}}
+{{$s := .Summary}}
+<div class="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Расходы / мес</div>
+		<div class="stat-value">{{Rub $s.MonthlyTotal}}</div>
+		<div class="text-xs text-ink-muted">{{Rub $s.YearlyTotal}} в год · {{$s.ActiveCount}} активных</div>
+	</div>
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Оплачено в этом месяце</div>
+		<div class="stat-value">{{Rub $s.PaidMonth}}</div>
+		<div class="text-xs text-ink-muted">за 12 месяцев {{Rub $s.Paid12m}}</div>
+	</div>
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Донаты в этом месяце</div>
+		<div class="stat-value">{{Rub $s.DonationsMonth}}</div>
+		<div class="text-xs text-ink-muted">за 12 месяцев {{Rub $s.Donations12m}} · покрытие {{$s.Coverage}}%</div>
+	</div>
+	<div class="box box-body !mb-0">
+		<div class="text-xs uppercase tracking-wide text-ink-muted">Баланс: донаты − оплаты</div>
+		<div class="stat-value {{if lt $s.Balance 0}}text-danger-fg{{else}}text-success-fg{{end}}">{{Rub $s.Balance}}</div>
+		<div class="text-xs text-ink-muted">за всё время</div>
+	</div>
+</div>
+
+<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+	<div class="min-w-0">
+		<div class="box">
+			<div class="box-header">
+				Ближайшие оплаты
+				{{if $s.OverdueCount}}<span class="label status-overdue">просрочено: {{$s.OverdueCount}}</span>{{end}}
+				{{if $s.SoonCount}}<span class="label status-soon">в ближайшие 2 недели: {{$s.SoonCount}}</span>{{end}}
+			</div>
+			{{if not $s.Upcoming}}<p class="p-6 text-center text-ink-muted">В ближайшие 45 дней платить нечего.</p>{{else}}
+			<div class="overflow-x-auto">
+			<table id="upcoming" class="table">
+				<thead><tr><th>Статья</th><th>Ответственный</th><th class="!text-right">Сумма</th><th>Срок</th></tr></thead>
+				<tbody>
+				{{range $s.Upcoming}}
+				<tr>
+					<td><a href="{{AppSubURL}}/admin/expenses/{{.ID}}">{{.Name}}</a> <span class="text-xs text-ink-muted">{{.CategoryName}}</span></td>
+					<td>{{.Owner}}</td>
+					<td class="whitespace-nowrap text-right">{{Money .Amount .Currency}}</td>
+					<td class="whitespace-nowrap">{{template "admin/due" .}}</td>
+				</tr>
+				{{end}}
+				</tbody>
+			</table>
+			</div>
+			{{end}}
+		</div>
+
+		<div class="box">
+			<div class="box-header">Последние оплаты <a class="ml-auto text-xs font-normal text-ink-muted" href="{{AppSubURL}}/admin/payments">все</a></div>
+			{{if not .Payments}}<p class="p-6 text-center text-ink-muted">Оплат ещё не было.</p>{{else}}
+			<div class="overflow-x-auto">
+			<table class="table">
+				<tbody>
+				{{range .Payments}}
+				<tr>
+					<td class="whitespace-nowrap text-ink-muted">{{Date .PaidOn}}</td>
+					<td><a href="{{AppSubURL}}/admin/expenses/{{.ExpenseID}}">{{.ExpenseName}}</a>{{if .Note}} <span class="text-xs text-ink-muted">— {{.Note}}</span>{{end}}</td>
+					<td class="whitespace-nowrap text-right">−{{Money .Amount .Currency}}</td>
+					<td class="text-xs text-ink-muted">{{.CreatedBy}}</td>
+				</tr>
+				{{end}}
+				</tbody>
+			</table>
+			</div>
+			{{end}}
+		</div>
+	</div>
+
+	<aside class="min-w-0">
+		<div class="box">
+			<div class="box-header">По категориям</div>
+			<div class="box-body">
+				{{range $s.ByCategory}}
+				<div class="py-1.5">
+					<div class="mb-1 flex justify-between gap-2"><span>{{.Name}} <span class="text-xs text-ink-muted">· {{.Count}}</span></span><span class="whitespace-nowrap">{{Rub .Monthly}}</span></div>
+					<div class="bar"><div style="width: {{.Share $s.MonthlyTotal}}%"></div></div>
+				</div>
+				{{else}}<p class="text-ink-muted">Нет активных статей.</p>{{end}}
+			</div>
+		</div>
+		<div class="box">
+			<div class="box-header">По ответственным</div>
+			<table class="table">
+				<tbody>
+				{{range $s.ByOwner}}
+				<tr><td><a href="{{AppSubURL}}/admin/expenses?owner={{.Name}}">{{.Name}}</a> <span class="text-xs text-ink-muted">· {{.Count}}</span></td><td class="whitespace-nowrap text-right">{{Rub .Monthly}}/мес</td></tr>
+				{{end}}
+				</tbody>
+			</table>
+		</div>
+		<div class="box">
+			<div class="box-header">Последние донаты <a class="ml-auto text-xs font-normal text-ink-muted" href="{{AppSubURL}}/admin/donations">все</a></div>
+			{{if not .Donations}}<p class="p-6 text-center text-ink-muted">Донатов пока нет.</p>{{end}}
+			{{template "admin/donation_feed" dict "Donations" .Donations "Admin" true}}
+		</div>
+	</aside>
+</div>
+{{template "base/footer" .}}

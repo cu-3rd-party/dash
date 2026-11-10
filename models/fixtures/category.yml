@@ -1,0 +1,17 @@
+- id: 1
+  name: Серверы
+  slug: servers
+  description: VPS и выделенные серверы
+  sort_order: 10
+
+- id: 2
+  name: Домены
+  slug: domains
+  description: ""
+  sort_order: 20
+
+- id: 3
+  name: Подписки
+  slug: saas
+  description: пустая категория
+  sort_order: 30

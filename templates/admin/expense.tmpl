@@ -1,0 +1,99 @@
+{{template "base/head" .}}
+{{$e := .Row}}
+<div class="mb-5 flex flex-wrap items-start justify-between gap-3 border-b border-line pb-4">
+	<div>
+		<h1 class="mb-1.5 break-words text-2xl">{{$e.Name}} <span class="text-ink-muted">#{{$e.ID}}</span></h1>
+		<div class="flex flex-wrap items-center gap-2 text-[13px]">
+			{{template "admin/status_label" $e}}
+			<span class="label label-basic">{{$e.CategoryName}}</span>
+			{{if not $e.IsPublic}}<span class="label label-basic">скрыта с публичной страницы</span>{{end}}
+			<span class="text-ink-muted">создана {{TimeMSK $e.CreatedUnix}} · обновлена {{TimeMSK $e.UpdatedUnix}}</span>
+		</div>
+	</div>
+	{{if .Doer.Can "editor"}}<a id="edit-expense" class="btn btn-secondary btn-sm" href="{{AppSubURL}}/admin/expenses/{{$e.ID}}/edit">Изменить</a>{{end}}
+</div>
+
+<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
+	<div class="min-w-0">
+		<div class="box">
+			<div class="box-header">Описание</div>
+			<div class="box-body whitespace-pre-line break-words">{{if $e.Description}}{{$e.Description}}{{else}}<span class="text-ink-muted">Описание не заполнено.</span>{{end}}</div>
+		</div>
+
+		<div class="box">
+			<div class="box-header">История оплат <span class="label">{{len .Payments}}</span><span class="ml-auto text-xs font-normal text-ink-muted">всего оплачено ≈ {{Rub .Paid}}</span></div>
+			{{if not .Payments}}<p class="p-6 text-center text-ink-muted">Оплат ещё не было.</p>{{else}}
+			<div class="overflow-x-auto">
+			<table id="payments" class="table">
+				<thead><tr><th>Дата</th><th class="!text-right">Сумма</th><th>Периодов</th><th>Комментарий</th><th>Кто внёс</th>{{if .Doer.Can "editor"}}<th></th>{{end}}</tr></thead>
+				<tbody>
+				{{range .Payments}}
+				<tr>
+					<td class="whitespace-nowrap">{{Date .PaidOn}}</td>
+					<td class="whitespace-nowrap text-right">{{Money .Amount .Currency}}</td>
+					<td>{{.Periods}}</td>
+					<td class="whitespace-pre-line">{{.Note}}</td>
+					<td class="text-ink-muted">{{.CreatedBy}}</td>
+					{{if $.Doer.Can "editor"}}
+					<td class="text-right">
+						<form method="post" action="{{AppSubURL}}/admin/payments/{{.ID}}/delete" hx-post="{{AppSubURL}}/admin/payments/{{.ID}}/delete" hx-confirm="Удалить оплату от {{Date .PaidOn}}?">
+							<button class="link-btn text-xs hover:!text-danger-fg" type="submit">удалить</button>
+						</form>
+					</td>
+					{{end}}
+				</tr>
+				{{end}}
+				</tbody>
+			</table>
+			</div>
+			{{end}}
+		</div>
+
+		{{if .Doer.Can "editor"}}
+		<div class="box">
+			<div class="box-header">Записать оплату</div>
+			<form id="payment-form" class="box-body" method="post" action="{{AppSubURL}}/admin/expenses/{{$e.ID}}/payments" hx-post="{{AppSubURL}}/admin/expenses/{{$e.ID}}/payments">
+				<div class="grid gap-x-3 sm:grid-cols-4">
+					<div class="field"><label for="paid_on">Дата</label><input id="paid_on" name="paid_on" type="date" value="{{Today}}" required></div>
+					<div class="field"><label for="p-amount">Сумма</label><input id="p-amount" name="amount" value="{{MoneyInput $e.Amount}}" inputmode="decimal" required></div>
+					<div class="field"><label for="p-currency">Валюта</label><select id="p-currency" name="currency">{{range Currencies}}<option {{if eq . $e.Currency}}selected{{end}}>{{.}}</option>{{end}}</select></div>
+					<div class="field"><label for="periods">Периодов</label><input id="periods" name="periods" type="number" min="1" max="120" value="1"></div>
+				</div>
+				<div class="field"><label for="note">Комментарий</label><input id="note" name="note" placeholder="номер счёта, кто платил, промокод…"></div>
+				{{if ne $e.Period "once"}}
+				<label class="mb-3.5 flex items-center gap-2 font-normal"><input type="checkbox" name="advance" value="on" checked> Сдвинуть срок следующей оплаты{{if $e.NextDue}} (сейчас {{Date $e.NextDue}}){{end}} на указанное число периодов</label>
+				{{end}}
+				<button class="btn btn-primary" type="submit">Записать оплату</button>
+			</form>
+		</div>
+		{{end}}
+	</div>
+
+	<aside class="min-w-0 divide-y divide-line">
+		<div class="pb-3">
+			<div class="mb-1 text-xs font-semibold text-ink-light">Стоимость</div>
+			<div class="text-lg font-semibold">{{Money $e.Amount $e.Currency}} <span class="font-normal text-ink-muted">/ {{$e.PeriodInfo.Short}}</span></div>
+			{{if $e.Monthly}}<div class="text-xs text-ink-muted">≈ {{Rub $e.Monthly}} в месяц</div>{{end}}
+		</div>
+		<div class="py-3"><div class="mb-1 text-xs font-semibold text-ink-light">Следующая оплата</div><div id="next-due">{{template "admin/due" $e}}</div></div>
+		<div class="py-3"><div class="mb-1 text-xs font-semibold text-ink-light">Последняя оплата</div>{{with $e.LastPayment}}{{Date .PaidOn}} · {{Money .Amount .Currency}}{{else}}<span class="text-ink-muted">—</span>{{end}}</div>
+		<div class="py-3"><div class="mb-1 text-xs font-semibold text-ink-light">Ответственный</div>{{if $e.Owner}}<span class="inline-flex items-center gap-1.5"><span class="avatar !h-5 !w-5 !text-[11px]">{{Initial $e.Owner}}</span>{{$e.Owner}}</span>{{else}}<span class="text-ink-muted">не назначен</span>{{end}}</div>
+		<div class="py-3">
+			<div class="mb-1 text-xs font-semibold text-ink-light">Провайдер</div>{{or $e.Provider "—"}}
+			{{if $e.URL}}<div class="break-all text-xs"><a href="{{$e.URL}}" rel="noopener noreferrer" target="_blank">{{$e.URL}}</a></div>{{end}}
+		</div>
+		{{if .Doer.Can "editor"}}
+		<div class="pt-3">
+			<div class="rounded-box border border-danger-border p-3">
+				<div class="mb-1 text-xs font-semibold text-danger-fg">Удаление</div>
+				<p class="mb-2 text-xs text-ink-muted">Удалит статью и всю историю её оплат ({{$e.PaymentCount}}). Чтобы просто перестать учитывать, снимите «Активна».</p>
+				<form method="post" action="{{AppSubURL}}/admin/expenses/{{$e.ID}}/delete" hx-post="{{AppSubURL}}/admin/expenses/{{$e.ID}}/delete">
+					<input class="mb-2" name="confirm" placeholder="введите: {{$e.Name}}" autocomplete="off" aria-label="Название статьи для подтверждения">
+					<button class="btn btn-danger btn-sm" type="submit">Удалить статью</button>
+				</form>
+			</div>
+		</div>
+		{{end}}
+	</aside>
+</div>
+{{template "base/footer" .}}
