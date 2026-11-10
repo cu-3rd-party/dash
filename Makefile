@@ -78,7 +78,7 @@ watch-frontend: node_modules
 
 .PHONY: watch-backend
 watch-backend:
-	$(GO) run github.com/air-verse/air@v1.63.0 -c .air.toml
+	@bash -c 'set -a; [ -f .env.dev ] && . ./.env.dev; set +a; exec $(GO) run github.com/air-verse/air@v1.63.0 -c .air.toml'
 
 .PHONY: clean
 clean:

@@ -5,6 +5,7 @@
 /tmp/
 coverage.out
 .env
+.env.dev
 
 /tests/e2e/reports/
 /tests/e2e/test-artifacts/

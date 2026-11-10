@@ -72,6 +72,7 @@ OAuth2-приложение: git.cu3rd.ru → Settings → Applications → OAut
 ```sh
 make build && DASH_SESSION_SECRET=local-only-session-secret-0123456789abcdef \
   DASH_COOKIE_SECURE=false DASH_DEV_LOGIN=true DASH_SEED_DEMO=true ./dash web
+make watch                     # пересборка на лету; переменные берёт из .env.dev (не в git)
 docker compose up --build      # приложение и Postgres, http://localhost:3000
 make lint test test-sqlite     # линтеры, юнит- и интеграционные тесты
 make test-pgsql                # то же на Postgres (TEST_PGSQL_DSN)
