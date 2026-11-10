@@ -2,7 +2,7 @@
 // public API or webhook, so this uses what lk.cloudtips.ru itself calls: an OAuth refresh
 // token (IdentityServer, scope offline_access) is exchanged for a short-lived access token,
 // which reads the payment timeline. The refresh token rotates, so the current one lives in
-// the site settings; DASH_CLOUDTIPS_REFRESH_TOKEN only seeds it.
+// the database; DASH_CLOUDTIPS_REFRESH_TOKEN only bootstraps it.
 package cloudtips
 
 import (
@@ -17,20 +17,15 @@ import (
 	"time"
 
 	audit_model "git.cu3rd.ru/cu3rd/dash/models/audit"
+	credential_model "git.cu3rd.ru/cu3rd/dash/models/credential"
+	"git.cu3rd.ru/cu3rd/dash/models/db"
 	donation_model "git.cu3rd.ru/cu3rd/dash/models/donation"
-	sitesetting_model "git.cu3rd.ru/cu3rd/dash/models/sitesetting"
 	"git.cu3rd.ru/cu3rd/dash/modules/money"
 	"git.cu3rd.ru/cu3rd/dash/modules/setting"
 )
 
 // Source is the donation source of everything imported here.
 const Source = "cloudtips"
-
-// Settings keys with the rotating refresh token and the env seed it came from.
-const (
-	KeyRefresh = "cloudtips_refresh"
-	KeySeed    = "cloudtips_seed"
-)
 
 const (
 	// clientID is the client lk.cloudtips.ru signs in with (the "client_id" claim of its tokens).
@@ -43,39 +38,60 @@ var client = &http.Client{Timeout: 20 * time.Second}
 // Enabled reports whether a refresh token is configured.
 func Enabled() bool { return setting.CloudTipsRefreshToken != "" }
 
-// accessToken exchanges the refresh token and stores the rotated one before anything else
-// can fail: a used refresh token is dead.
+// accessToken exchanges a refresh token and stores the rotated one before anything else can
+// fail: a used refresh token is dead. The stored token is tried first. The environment one
+// is a fallback for when it is gone, and only when it differs from the one the stored token
+// came from: a redeploy with an old file must not bring back a token that was used up.
 func accessToken(ctx context.Context) (string, error) {
-	all, err := sitesetting_model.All(ctx)
-	if err != nil {
+	type attempt struct{ token, seed string }
+	var attempts []attempt
+	env := setting.CloudTipsRefreshToken
+	stored, err := credential_model.Get(ctx, Source)
+	switch {
+	case err == nil:
+		attempts = append(attempts, attempt{stored.Value, stored.Seed})
+		if env != "" && env != stored.Seed && env != stored.Value {
+			attempts = append(attempts, attempt{env, env})
+		}
+	case db.IsErrNotExist(err):
+		attempts = append(attempts, attempt{env, env})
+	default:
 		return "", err
 	}
-	refresh := all[KeyRefresh]
-	if refresh == "" || all[KeySeed] != setting.CloudTipsRefreshToken {
-		refresh = setting.CloudTipsRefreshToken // a fresh token pasted into the env wins
+	var errs []error
+	for _, a := range attempts {
+		access, refresh, err := exchange(ctx, a.token)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+		return access, credential_model.Save(ctx, Source, refresh, a.seed)
 	}
+	return "", errors.Join(errs...)
+}
+
+// exchange trades a refresh token for an access token and the next refresh token.
+func exchange(ctx context.Context, refresh string) (access, next string, err error) {
 	form := url.Values{"grant_type": {"refresh_token"}, "refresh_token": {refresh}, "client_id": {clientID}}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, setting.CloudTipsIdentityURL+"/connect/token", strings.NewReader(form.Encode()))
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	var tok struct {
 		Access  string `json:"access_token"`
 		Refresh string `json:"refresh_token"`
-		Error   string `json:"error"`
 	}
 	if err := do(req, &tok); err != nil {
-		return "", fmt.Errorf("cloudtips token: %w", err)
+		return "", "", fmt.Errorf("cloudtips token: %w", err)
 	}
 	if tok.Access == "" {
-		return "", fmt.Errorf("cloudtips token: %s", tok.Error)
+		return "", "", errors.New("cloudtips token: no access_token in the response")
 	}
 	if tok.Refresh == "" {
 		tok.Refresh = refresh // not rotated
 	}
-	err = sitesetting_model.Set(ctx, map[string]string{KeyRefresh: tok.Refresh, KeySeed: setting.CloudTipsRefreshToken})
-	return tok.Access, err
+	return tok.Access, tok.Refresh, nil
 }
 
 // do sends req and decodes the JSON body even for 4xx, where IdentityServer explains itself.

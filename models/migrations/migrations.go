@@ -20,6 +20,7 @@ type migration struct {
 var migrations = []migration{
 	{"create finance tables with default categories and settings", v1CreateFinanceTables},
 	{"add member telegram", v2AddMemberTelegram},
+	{"create credential, move the cloudtips refresh token there", v3CreateCredential},
 }
 
 // Version stores the current schema version.

@@ -61,7 +61,7 @@ var (
 
 	// CloudTipsURL is the CloudTips page link shown as a donation button (payments there are reconciled by hand); empty hides it.
 	CloudTipsURL = ""
-	// CloudTipsRefreshToken is the OAuth refresh token of the CloudTips receiver account (see services/cloudtips);
+	// CloudTipsRefreshToken bootstraps the OAuth refresh token of the CloudTips receiver account (see services/cloudtips);
 	// empty disables the import of donations from it.
 	CloudTipsRefreshToken = ""
 	// CloudTipsInterval is how often CloudTips is polled for new donations (DASH_CLOUDTIPS_INTERVAL, e.g. 30s, 5m).
