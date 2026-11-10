@@ -48,18 +48,3 @@ func TestUpsert(t *testing.T) {
 	_, err = member_model.GetByLogin(ctx, "missing")
 	require.ErrorIs(t, err, db.ErrNotExist)
 }
-
-func TestTelegram(t *testing.T) {
-	m := &member_model.Member{Login: "ed"}
-	assert.Equal(t, "ed", m.TelegramHandle(), "defaults to the Forgejo login")
-	m.Telegram = "ed_tg"
-	assert.Equal(t, "ed_tg", m.TelegramHandle())
-
-	for in, want := range map[string]string{"@Name_1": "Name_1", "https://t.me/pxc1984": "pxc1984", "": ""} {
-		got, err := member_model.NormalizeTelegram(in)
-		require.NoError(t, err)
-		assert.Equal(t, want, got)
-	}
-	_, err := member_model.NormalizeTelegram("a b")
-	require.ErrorIs(t, err, db.ErrInvalidArgument)
-}

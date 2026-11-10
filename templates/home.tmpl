@@ -79,8 +79,7 @@
 	<aside class="min-w-0">
 		<div class="box">
 			<div class="box-header">Поддержать</div>
-			<div class="box-body whitespace-pre-line">{{index .Settings "donate_text"}}
-				{{if .Contacts}}<p class="mt-2">Telegram: {{range $i, $c := .Contacts}}{{if $i}}, {{end}}<a href="https://t.me/{{$c}}" rel="noopener">@{{$c}}</a>{{end}}</p>{{end}}</div>
+			<div class="box-body whitespace-pre-line">{{index .Settings "donate_text"}}</div>
 		</div>
 		<div class="box">
 			<div class="box-header">Донаты <span class="label">{{len .Donations}}</span></div>

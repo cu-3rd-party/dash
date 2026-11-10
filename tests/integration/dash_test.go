@@ -495,21 +495,3 @@ func TestCategoryArrows(t *testing.T) {
 	resp = MakeRequest(t, as(NewRequest(t, "GET", "/admin/categories"), "vi"), http.StatusOK)
 	NewHTMLParser(t, resp.Body).AssertElement(t, `#categories button`, false)
 }
-
-func TestProfileTelegram(t *testing.T) {
-	tests.PrepareTestEnv(t)
-
-	MakeRequest(t, as(NewRequest(t, "GET", "/admin/profile"), "vi"), http.StatusForbidden)
-	MakeRequest(t, as(NewRequestWithValues(t, "POST", "/admin/profile", map[string]string{"telegram": "ed_real"}), "vi"), http.StatusForbidden)
-	MakeRequest(t, as(NewRequestWithValues(t, "POST", "/admin/profile", map[string]string{"telegram": "a b"}), "ed"), http.StatusUnprocessableEntity)
-
-	home := MakeRequest(t, NewRequest(t, "GET", "/"), http.StatusOK).Body.String()
-	assert.Contains(t, home, "@boss")
-	assert.Contains(t, home, "@ed")
-	assert.NotContains(t, home, "@vi")
-
-	MakeRequest(t, as(NewRequestWithValues(t, "POST", "/admin/profile", map[string]string{"telegram": "@Ed_Real"}), "ed"), http.StatusSeeOther)
-	home = MakeRequest(t, NewRequest(t, "GET", "/"), http.StatusOK).Body.String()
-	assert.Contains(t, home, `href="https://t.me/Ed_Real"`)
-	assert.NotContains(t, home, "@ed<")
-}

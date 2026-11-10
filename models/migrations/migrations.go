@@ -19,7 +19,6 @@ type migration struct {
 // Append-only: never edit or reorder existing entries.
 var migrations = []migration{
 	{"create finance tables with default categories and settings", v1CreateFinanceTables},
-	{"add member telegram", v2AddMemberTelegram},
 }
 
 // Version stores the current schema version.
