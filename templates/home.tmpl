@@ -38,8 +38,14 @@
 					{{range .Rows}}
 					<tr>
 						<td>
-							<div>{{.Name}}{{if .Provider}} <span class="text-xs text-ink-muted">· {{.Provider}}</span>{{end}}</div>
-							{{if .Description}}<div class="whitespace-pre-line text-xs text-ink-muted">{{.Description}}</div>{{end}}
+							{{if .Description}}
+							<details class="expense-details">
+								<summary class="flex cursor-pointer items-baseline gap-1.5 hover:text-white"><span class="chevron text-[10px] text-ink-muted">▶</span><span>{{.Name}}{{if .Provider}} <span class="text-xs text-ink-muted">· {{.Provider}}</span>{{end}}</span></summary>
+								<div class="mt-1.5 whitespace-pre-line pl-4 text-xs text-ink-muted">{{.Description}}</div>
+							</details>
+							{{else}}
+							<div class="pl-4">{{.Name}}{{if .Provider}} <span class="text-xs text-ink-muted">· {{.Provider}}</span>{{end}}</div>
+							{{end}}
 						</td>
 						<td class="whitespace-nowrap text-right">{{Money .Amount .Currency}}<span class="text-ink-muted">/{{.PeriodInfo.Short}}</span></td>
 						<td class="whitespace-nowrap text-right">{{Rub .Monthly}}</td>

@@ -159,3 +159,20 @@
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* public page: descriptions are folded under the expense name */
+.expense-details > summary {
+  list-style: none;
+}
+
+.expense-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.expense-details .chevron {
+  transition: transform 0.15s;
+}
+
+.expense-details[open] .chevron {
+  transform: rotate(90deg);
+}

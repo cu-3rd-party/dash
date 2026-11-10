@@ -41,6 +41,12 @@ func TestHomeIsPublic(t *testing.T) {
 	assert.NotContains(t, table, "secret-backup", "private expenses are hidden")
 	assert.NotContains(t, table, "old-domain", "archived expenses are hidden")
 	assert.Contains(t, table, "вкл. 1 непубличных", "but they are counted")
+	// descriptions are folded: the name is the summary, the text opens on click
+	grm := doc.Find("#public-expenses details.expense-details").First()
+	assert.Contains(t, grm.Find("summary").Text(), "grm")
+	assert.Contains(t, grm.Text(), "Основной узел")
+	_, open := grm.Attr("open")
+	assert.False(t, open)
 
 	feed := doc.Find(".donation-feed").Text()
 	assert.Contains(t, feed, "Вася")
