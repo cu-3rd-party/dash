@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
@@ -103,6 +104,14 @@ func Create(ctx context.Context, c *Category) error {
 	if err := checkSlugFree(ctx, c); err != nil {
 		return err
 	}
+	if c.SortOrder == 0 {
+		// a new category goes to the end of the list
+		var last struct{ Max int }
+		if _, err := db.GetEngine(ctx).Table("category").Select("COALESCE(MAX(sort_order), 0) AS max").Get(&last); err != nil {
+			return err
+		}
+		c.SortOrder = last.Max + orderStep
+	}
 	_, err := db.GetEngine(ctx).Insert(c)
 	return err
 }
@@ -115,8 +124,38 @@ func Update(ctx context.Context, c *Category) error {
 	if err := checkSlugFree(ctx, c); err != nil {
 		return err
 	}
-	_, err := db.GetEngine(ctx).ID(c.ID).Cols("name", "slug", "description", "sort_order").Update(c)
+	_, err := db.GetEngine(ctx).ID(c.ID).Cols("name", "slug", "description").Update(c)
 	return err
+}
+
+// orderStep spaces the positions so that renumbering is rarely needed.
+const orderStep = 10
+
+// Move shifts a category one position up (delta -1) or down (delta 1) and
+// renumbers all positions 10, 20, 30… At the edge of the list it does nothing.
+func Move(ctx context.Context, id int64, delta int) error {
+	return db.WithTx(ctx, func(ctx context.Context) error {
+		cats := make([]*Category, 0, 8)
+		if err := db.GetEngine(ctx).Asc("sort_order", "name").Find(&cats); err != nil {
+			return err
+		}
+		i := slices.IndexFunc(cats, func(c *Category) bool { return c.ID == id })
+		if i < 0 {
+			return ErrCategoryNotExist{ID: id}
+		}
+		if j := i + delta; j >= 0 && j < len(cats) {
+			cats[i], cats[j] = cats[j], cats[i]
+		}
+		for n, c := range cats {
+			if want := (n + 1) * orderStep; c.SortOrder != want {
+				c.SortOrder = want
+				if _, err := db.GetEngine(ctx).ID(c.ID).Cols("sort_order").Update(c); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
 }
 
 func checkSlugFree(ctx context.Context, c *Category) error {

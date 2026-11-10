@@ -124,6 +124,7 @@ func NewFuncMap() template.FuncMap {
 		"Relative":   Relative,
 		"Today":      func() string { return money.Today(time.Now()).Format(money.DateLayout) },
 		"Plural":     Plural,
+		"Add":        func(a, b int) int { return a + b },
 		"Initial":    Initial,
 		"Periods":    func() []money.Period { return money.Periods },
 		"Period":     money.GetPeriod,

@@ -41,7 +41,6 @@ func readCategory(ctx *context.Context) *category_model.Category {
 		Name:        ctx.FormString("name"),
 		Slug:        ctx.FormString("slug"),
 		Description: ctx.FormString("description"),
-		SortOrder:   int(ctx.FormInt64("sort_order")),
 	}
 }
 
@@ -71,6 +70,19 @@ func UpdateCategory(ctx *context.Context) {
 	}
 	audit_model.Record(ctx.Req.Context(), ctx.DoerLogin(), "category.update", c.Name)
 	ctx.RedirectWithFlash("/admin/categories", "Категория сохранена")
+}
+
+// MoveCategory shifts a category up or down the list: POST /admin/categories/{id}/move (dir=up|down)
+func MoveCategory(ctx *context.Context) {
+	delta := 1
+	if ctx.FormString("dir") == "up" {
+		delta = -1
+	}
+	if err := category_model.Move(ctx.Req.Context(), ctx.PathParamInt64("id"), delta); err != nil {
+		ctx.NotFoundOrServerError("Move category", err)
+		return
+	}
+	ctx.Redirect("/admin/categories")
 }
 
 // DeleteCategory removes an empty category: POST /admin/categories/{id}/delete

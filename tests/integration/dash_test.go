@@ -20,6 +20,7 @@ import (
 	auth_service "git.cu3rd.ru/cu3rd/dash/services/auth"
 	"git.cu3rd.ru/cu3rd/dash/tests"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -470,4 +471,27 @@ func TestSignInGoesStraightToForgejo(t *testing.T) {
 	t.Cleanup(func() { setting.PasswordLogin, setting.Password = "", "" })
 	resp = MakeRequest(t, NewRequest(t, "GET", "/signin"), http.StatusOK)
 	NewHTMLParser(t, resp.Body).AssertElement(t, "#password-form", true)
+}
+
+func TestCategoryArrows(t *testing.T) {
+	tests.PrepareTestEnv(t)
+
+	resp := MakeRequest(t, as(NewRequest(t, "GET", "/admin/categories"), "ed"), http.StatusOK)
+	doc := NewHTMLParser(t, resp.Body)
+	doc.AssertElement(t, `#category-1 button[aria-label*="выше"][disabled]`, true)
+	doc.AssertElement(t, `#category-3 button[aria-label*="ниже"][disabled]`, true)
+	doc.AssertElement(t, `input[name=sort_order]`, false)
+
+	resp = MakeRequest(t, as(NewRequestWithValues(t, "POST", "/admin/categories/3/move", map[string]string{"dir": "up"}), "ed"), http.StatusSeeOther)
+	assert.Equal(t, "/admin/categories", resp.Header().Get("Location"))
+	resp = MakeRequest(t, as(NewRequest(t, "GET", "/admin/categories"), "ed"), http.StatusOK)
+	var order []string
+	NewHTMLParser(t, resp.Body).Find("#categories tbody tr").Each(func(_ int, s *goquery.Selection) {
+		order = append(order, s.AttrOr("id", ""))
+	})
+	assert.Equal(t, []string{"category-1", "category-3", "category-2"}, order)
+
+	MakeRequest(t, as(NewRequestWithValues(t, "POST", "/admin/categories/3/move", map[string]string{"dir": "up"}), "vi"), http.StatusForbidden)
+	resp = MakeRequest(t, as(NewRequest(t, "GET", "/admin/categories"), "vi"), http.StatusOK)
+	NewHTMLParser(t, resp.Body).AssertElement(t, `#categories button`, false)
 }

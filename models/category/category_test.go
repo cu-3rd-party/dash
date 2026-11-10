@@ -41,3 +41,36 @@ func TestCreateUpdateDelete(t *testing.T) {
 	require.NoError(t, category_model.Delete(ctx, 3))
 	unittest.AssertNotExistsBean(t, &category_model.Category{ID: 3})
 }
+
+func TestMoveAndAppend(t *testing.T) {
+	unittest.PrepareTestDatabase(t)
+	ctx := t.Context()
+	slugs := func() []string {
+		cats, err := category_model.List(ctx)
+		require.NoError(t, err)
+		out := make([]string, 0, len(cats))
+		for _, c := range cats {
+			out = append(out, c.Slug)
+		}
+		return out
+	}
+
+	c := &category_model.Category{Name: "Почта", Slug: "mail"}
+	require.NoError(t, category_model.Create(ctx, c))
+	assert.Equal(t, 40, c.SortOrder, "a new category goes to the end")
+	assert.Equal(t, []string{"servers", "domains", "saas", "mail"}, slugs())
+
+	require.NoError(t, category_model.Move(ctx, c.ID, -1))
+	assert.Equal(t, []string{"servers", "domains", "mail", "saas"}, slugs())
+	require.NoError(t, category_model.Move(ctx, 1, 1))
+	assert.Equal(t, []string{"domains", "servers", "mail", "saas"}, slugs())
+	require.NoError(t, category_model.Move(ctx, 2, -1), "the first one stays first")
+	assert.Equal(t, []string{"domains", "servers", "mail", "saas"}, slugs())
+	require.ErrorIs(t, category_model.Move(ctx, 999, 1), db.ErrNotExist)
+
+	// saving the name and description does not touch the position
+	d := unittest.AssertExistsAndLoadBean(t, &category_model.Category{Slug: "domains"})
+	d.Name = "Доменные имена"
+	require.NoError(t, category_model.Update(ctx, d))
+	assert.Equal(t, []string{"domains", "servers", "mail", "saas"}, slugs())
+}

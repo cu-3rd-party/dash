@@ -1,44 +1,73 @@
 {{template "base/head" .}}
-<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+{{$editor := .Doer.Can "editor"}}
+{{$n := len .Categories}}
+<div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
 	<div class="box min-w-0">
 		<div class="overflow-x-auto">
 		<table id="categories" class="table">
-			<thead><tr><th>Категория</th><th>Код</th><th>Порядок</th><th>Статей</th></tr></thead>
+			<thead>
+				<tr>
+					{{if $editor}}<th class="w-0" title="порядок на страницах"></th>{{end}}
+					<th>Категория</th>
+					<th>Код</th>
+					<th>Описание</th>
+					<th class="!text-right">Статей</th>
+					{{if $editor}}<th class="w-0"></th>{{end}}
+				</tr>
+			</thead>
 			<tbody>
-			{{range .Categories}}
-			{{if $.Doer.Can "editor"}}
-			<tr>
-				<td colspan="4">
-					<form class="flex flex-wrap items-center gap-1.5" method="post" action="{{AppSubURL}}/admin/categories/{{.ID}}" hx-post="{{AppSubURL}}/admin/categories/{{.ID}}">
-						<input class="!w-auto flex-1 basis-36" name="name" value="{{.Name}}" aria-label="Название" required>
-						<input class="!w-28 font-mono" name="slug" value="{{.Slug}}" aria-label="Код" required>
-						<input class="!w-20" name="sort_order" type="number" value="{{.SortOrder}}" aria-label="Порядок">
-						<input class="!w-auto flex-1 basis-36" name="description" value="{{.Description}}" placeholder="описание" aria-label="Описание">
-						<a class="label label-basic" href="{{AppSubURL}}/admin/expenses?cat={{.ID}}&amp;status=all" title="статей в категории">{{.ExpenseCount}}</a>
-						<button class="btn btn-secondary btn-sm" type="submit">Сохранить</button>
-						<button class="btn btn-danger btn-sm" type="submit" formaction="{{AppSubURL}}/admin/categories/{{.ID}}/delete" hx-post="{{AppSubURL}}/admin/categories/{{.ID}}/delete" hx-confirm="Удалить категорию «{{.Name}}»?" {{if .ExpenseCount}}disabled title="в категории есть статьи"{{end}}>Удалить</button>
+			{{range $i, $c := .Categories}}
+			<tr id="category-{{$c.ID}}">
+				{{if $editor}}
+				<td class="whitespace-nowrap align-middle">
+					<form class="inline" method="post" action="{{AppSubURL}}/admin/categories/{{$c.ID}}/move" hx-post="{{AppSubURL}}/admin/categories/{{$c.ID}}/move">
+						<input type="hidden" name="dir" value="up">
+						<button class="btn btn-secondary btn-sm !px-2" type="submit" title="Выше" aria-label="Переместить «{{$c.Name}}» выше" {{if eq $i 0}}disabled{{end}}>↑</button>
+					</form>
+					<form class="inline" method="post" action="{{AppSubURL}}/admin/categories/{{$c.ID}}/move" hx-post="{{AppSubURL}}/admin/categories/{{$c.ID}}/move">
+						<input type="hidden" name="dir" value="down">
+						<button class="btn btn-secondary btn-sm !px-2" type="submit" title="Ниже" aria-label="Переместить «{{$c.Name}}» ниже" {{if eq (Add $i 1) $n}}disabled{{end}}>↓</button>
 					</form>
 				</td>
+				<td class="align-middle"><input class="min-w-[9rem]" form="category-form-{{$c.ID}}" name="name" value="{{$c.Name}}" aria-label="Название" required></td>
+				<td class="align-middle"><input class="min-w-[7rem] font-mono" form="category-form-{{$c.ID}}" name="slug" value="{{$c.Slug}}" aria-label="Код" required></td>
+				<td class="align-middle"><input class="min-w-[12rem]" form="category-form-{{$c.ID}}" name="description" value="{{$c.Description}}" placeholder="описание" aria-label="Описание"></td>
+				{{else}}
+				<td>{{$c.Name}}</td>
+				<td class="font-mono">{{$c.Slug}}</td>
+				<td class="text-ink-light">{{$c.Description}}</td>
+				{{end}}
+				<td class="text-right align-middle"><a class="label label-basic" href="{{AppSubURL}}/admin/expenses?cat={{$c.ID}}&amp;status=all" title="статей в категории">{{$c.ExpenseCount}}</a></td>
+				{{if $editor}}
+				<td class="whitespace-nowrap align-middle">
+					<form id="category-form-{{$c.ID}}" class="inline" method="post" action="{{AppSubURL}}/admin/categories/{{$c.ID}}" hx-post="{{AppSubURL}}/admin/categories/{{$c.ID}}">
+						<button class="btn btn-secondary btn-sm" type="submit">Сохранить</button>
+					</form>
+					<form class="inline" method="post" action="{{AppSubURL}}/admin/categories/{{$c.ID}}/delete" hx-post="{{AppSubURL}}/admin/categories/{{$c.ID}}/delete" hx-confirm="Удалить категорию «{{$c.Name}}»?">
+						<button class="btn btn-danger btn-sm" type="submit" {{if $c.ExpenseCount}}disabled title="в категории есть статьи"{{end}}>Удалить</button>
+					</form>
+				</td>
+				{{end}}
 			</tr>
-			{{else}}
-			<tr><td>{{.Name}}<div class="text-xs text-ink-muted">{{.Description}}</div></td><td class="font-mono">{{.Slug}}</td><td>{{.SortOrder}}</td><td><a href="{{AppSubURL}}/admin/expenses?cat={{.ID}}&amp;status=all">{{.ExpenseCount}}</a></td></tr>
-			{{end}}
 			{{end}}
 			</tbody>
 		</table>
 		</div>
+		<p class="help px-3.5 py-2">Порядок категорий здесь — тот же, что на публичной странице и в админке. Код — внутреннее имя латиницей, по нему категории опознаются при импорте; на сайте он не виден.</p>
 	</div>
-	{{if .Doer.Can "editor"}}
+	{{if $editor}}
 	<aside class="box min-w-0">
 		<div class="box-header">Новая категория</div>
 		<form id="category-form" class="box-body" method="post" action="{{AppSubURL}}/admin/categories" hx-post="{{AppSubURL}}/admin/categories">
-			<div class="field"><label for="c-name">Название</label><input id="c-name" name="name" placeholder="Подписки / SaaS" required></div>
-			<div class="grid grid-cols-2 gap-x-3">
-				<div class="field"><label for="c-slug">Код</label><input id="c-slug" class="font-mono" name="slug" placeholder="saas" required></div>
-				<div class="field"><label for="c-sort">Порядок</label><input id="c-sort" name="sort_order" type="number" value="30"></div>
+			<div class="field"><label for="c-name">Название</label><input id="c-name" name="name" placeholder="Подписки" required></div>
+			<div class="field">
+				<label for="c-slug">Код</label>
+				<input id="c-slug" class="font-mono" name="slug" placeholder="subscriptions" required>
+				<p class="help">Латиница, цифры и дефис.</p>
 			</div>
 			<div class="field"><label for="c-desc">Описание</label><input id="c-desc" name="description"></div>
 			<button class="btn btn-primary w-full" type="submit">Создать</button>
+			<p class="help mt-2">Новая категория встаёт в конец списка, порядок меняется стрелками.</p>
 		</form>
 	</aside>
 	{{end}}

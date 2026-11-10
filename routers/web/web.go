@@ -78,6 +78,7 @@ func Routes() http.Handler {
 				r.Method(http.MethodPost, "/categories", context.Handler(admin.CreateCategory))
 				r.Method(http.MethodPost, "/categories/{id}", context.Handler(admin.UpdateCategory))
 				r.Method(http.MethodPost, "/categories/{id}/delete", context.Handler(admin.DeleteCategory))
+				r.Method(http.MethodPost, "/categories/{id}/move", context.Handler(admin.MoveCategory))
 			})
 
 			r.Group(func(r chi.Router) {
